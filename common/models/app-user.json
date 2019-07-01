@@ -20,15 +20,15 @@
     },
     "birthday": {
       "type": "date",
-      "required": true
+      "required": false
     },
     "qrCode": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "status": {
       "type": "string",
-      "required": true
+      "required": false
     },
     "photo": {
       "type": "string",
@@ -46,6 +46,12 @@
       }
     }
   },
-  "acls": [],
+  "acls": [
+    {
+      "principalType": "ROLE",
+      "principalId": "admin",
+      "permission": "ALLOW"
+    }
+  ],
   "methods": {}
 }
