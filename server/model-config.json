@@ -43,5 +43,25 @@
   "Department": {
     "dataSource": "db",
     "public": true
+  },
+  "Meal": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Category": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Menu": {
+    "dataSource": "db",
+    "public": true
+  },
+  "DayMenu": {
+    "dataSource": "db",
+    "public": true
+  },
+  "UserMenu": {
+    "dataSource": "db",
+    "public": true
   }
 }

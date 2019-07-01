@@ -1,0 +1,36 @@
+{
+  "name": "UserMenu",
+  "plural": "UserMenus",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "userId": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    },
+    "date": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "scope": {
+    "include": "menus"
+  },
+  "validations": [],
+  "relations": {
+    "menus": {
+      "type": "hasAndBelongsToMany",
+      "model": "Menu",
+      "foreignKey": ""
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

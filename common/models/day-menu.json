@@ -1,0 +1,39 @@
+{
+  "name": "DayMenu",
+  "plural": "DayMenus",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "scope": {
+    "include": "menus"
+  },
+  "properties": {
+    "id": {
+      "type": "date",
+      "required": true
+    },
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "menus": {
+      "type": "hasAndBelongsToMany",
+      "model": "Menu",
+      "foreignKey": "",
+      "options": {
+        "nestRemoting": true
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
