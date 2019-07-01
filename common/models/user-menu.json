@@ -6,9 +6,6 @@
   "options": {
     "validateUpsert": true
   },
-  "scope": {
-    "include": "menus"
-  },
   "properties": {
     "userId": {
       "type": "string",
@@ -22,6 +19,9 @@
       "type": "date",
       "required": true
     }
+  },
+  "scope": {
+    "include": "menus"
   },
   "validations": [],
   "relations": {
