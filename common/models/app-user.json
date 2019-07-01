@@ -6,6 +6,9 @@
   "options": {
     "validateUpsert": true
   },
+  "scope": {
+    "include": "department"
+  },
   "properties": {
     "id": {
       "type": "string",
@@ -17,10 +20,6 @@
     },
     "birthday": {
       "type": "date",
-      "required": true
-    },
-    "departmentId": {
-      "type": "string",
       "required": true
     },
     "qrCode": {
@@ -37,14 +36,16 @@
     }
   },
   "validations": [],
-  "relations": {},
-  "acls": [
-    {
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW",
-      "property": "customLogin"
+  "relations": {
+    "department": {
+      "type": "belongsTo",
+      "model": "Department",
+      "foreignKey": "departmentId",
+      "options": {
+        "nestRemoting": true
+      }
     }
-  ],
+  },
+  "acls": [],
   "methods": {}
 }
