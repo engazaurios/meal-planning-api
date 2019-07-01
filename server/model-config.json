@@ -34,7 +34,7 @@
   },
   "Role": {
     "dataSource": "db",
-    "public": false
+    "public": true
   },
   "AppUser": {
     "dataSource": "db",
