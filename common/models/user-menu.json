@@ -7,7 +7,9 @@
     "validateUpsert": true
   },
   "scope": {
-    "include": ["menus"]
+    "include": [
+      "menus"
+    ]
   },
   "properties": {
     "userId": {

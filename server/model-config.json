@@ -63,5 +63,9 @@
   "UserMenu": {
     "dataSource": "db",
     "public": true
+  },
+  "DateModel": {
+    "dataSource": "db",
+    "public": true
   }
 }

@@ -3,11 +3,11 @@ module.exports = function roleCreation(app) {
   var Role = app.models.Role;
   var RoleMapping = app.models.RoleMapping;
 
-  Role.destroyAll({}, function() {
-    AppUser.destroyAll({}, function() {
-      createUsers();
-    });
-  });
+  // Role.destroyAll({}, function() {
+  //   AppUser.destroyAll({}, function() {
+  //     createUsers();
+  //   });
+  // });
 
   function createUsers() {
     AppUser.create([
