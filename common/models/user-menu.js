@@ -82,7 +82,7 @@ module.exports = function(UserMenu) {
 
   UserMenu.remoteMethod('getMenusPerDate', {
     http: {
-      path: '/menus-per-date/:userId/:startDate/:endDate',
+      path: '/MenusPerDate/:userId/:startDate/:endDate',
       verb: 'get',
     },
     accepts: [
@@ -110,14 +110,18 @@ module.exports = function(UserMenu) {
 
   UserMenu.remoteMethod('publishDayMenus', {
     http: {
-      path: '/publish-day-menus/:startDate',
-      verb: 'get',
+      path: '/PublishDayMenus',
+      verb: 'post',
     },
     accepts: [
       {
         arg: 'startDate',
         type: 'date',
         required: true,
+        description: 'The start day of the week, that you want to publish',
+        http: {
+          source: 'form',
+        },
       },
     ],
     returns: {
@@ -128,7 +132,7 @@ module.exports = function(UserMenu) {
 
   UserMenu.remoteMethod('getUserMenuPerDate', {
     http: {
-      path: '/get-user-menu-per-date/:userId/:date',
+      path: '/UserMenuPerDate/:userId/:date',
       verb: 'get',
     },
     accepts: [
