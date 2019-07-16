@@ -66,6 +66,20 @@ module.exports = function(UserMenu) {
     });
   };
 
+  UserMenu.getUserMenuPerDate = function(userId, date, callback) {
+    console.log(userId);
+    console.log(date);
+    UserMenu.findOne({
+      where: {
+        userId: userId,
+        date: date,
+      },
+    })
+    .then(function(user) {
+      callback(null, user);
+    });
+  };
+
   UserMenu.remoteMethod('getMenusPerDate', {
     http: {
       path: '/menus-per-date/:userId/:startDate/:endDate',
@@ -109,6 +123,29 @@ module.exports = function(UserMenu) {
     returns: {
       arg: 'userMenus',
       type: 'array',
+    },
+  });
+
+  UserMenu.remoteMethod('getUserMenuPerDate', {
+    http: {
+      path: '/get-user-menu-per-date/:userId/:date',
+      verb: 'get',
+    },
+    accepts: [
+      {
+        arg: 'userId',
+        type: 'String',
+        required: true,
+      },
+      {
+        arg: 'date',
+        type: 'date',
+        required: true,
+      },
+    ],
+    returns: {
+      arg: 'userMenus',
+      type: 'object',
     },
   });
 };
