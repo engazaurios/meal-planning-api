@@ -4,6 +4,26 @@
 module.exports = function(AppUser) {
   delete AppUser.validations.email;
 
+  AppUser.observe('after save', function setRoleMapping(ctx, next) {
+    if (ctx.instance) {
+      if (ctx.isNewInstance) {
+        var RoleMapping = AppUser.app.models.RoleMapping;
+        console.log(ctx.instance);
+        RoleMapping.create({
+          principalType: 'USER',
+          principalId: ctx.instance.id,
+          roleId: ctx.instance.roleId,
+        }, function(err, roleMapping) {
+          if (err) {
+            return console.log(err);
+          }
+          console.log(roleMapping);
+        });
+      }
+    }
+    next();
+  });
+
   // Add custom validator because validatesFormat with regex will return false on a null value
   var regularExpression = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   AppUser.validate('email', function(err) {
