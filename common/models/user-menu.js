@@ -10,25 +10,25 @@ module.exports = function(UserMenu) {
     var dates = getDates(startDate, endDate);
 
     Promise.all(dates.map(function(date) {
-      return UserMenu.find({
+      return UserMenu.findOne({
         where: {and: [
           {date: date.dateId},
           {userId: userId},
         ]},
       })
-      .then(function(menus) {
-        date.menus = menus;
+      .then(function(userMenu) {
+        date.userMenu = userMenu;
         return  date;
       });
     })).then(function(dates) {
       return Promise.all(dates.map(function(date) {
-        return DayMenu.find({
+        return DayMenu.findOne({
           where: {
             date: date.dateId,
           },
         })
-        .then(function(dayMenus) {
-          date.dayMenus = dayMenus;
+        .then(function(dayMenu) {
+          date.dayMenu = dayMenu;
           return  date;
         });
       }));
