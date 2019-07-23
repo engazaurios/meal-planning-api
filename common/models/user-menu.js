@@ -40,7 +40,7 @@ module.exports = function(UserMenu) {
   UserMenu.publishDayMenus = function(startDate, callback) {
     var AppUser = UserMenu.app.models.AppUser;
 
-    if (startDate.getDay() != 0) {
+    if (startDate.getDay() != 1) {
       callback(null, {message: 'Invalid date'});
       return;
     }
