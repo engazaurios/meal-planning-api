@@ -53,7 +53,7 @@ module.exports = function(UserMenu) {
           }
           var creation = UserMenu.create({
             userId: user.id,
-            status: 'O',
+            status: 'PENDING',
             date: date.dateId,
           });
           return accumulator.concat(creation);
@@ -77,6 +77,56 @@ module.exports = function(UserMenu) {
     })
     .then(function(user) {
       callback(null, user);
+    });
+  };
+
+  UserMenu.saveMenus = function(userId, date, menusId, callback) {
+    UserMenu.findOne({
+      where: {
+        and: [
+          {userId: userId},
+          {date: date}
+        ]
+      }
+    }).then(userMenu => {
+      const operations = menusId.map(menuId => {
+        return new Promise((resolve, reject) => {
+          userMenu.menus.add(menuId, err=> {
+            if (err) {
+              return reject(err);
+            }
+            resolve(menuId);
+          });
+        });
+      });
+      
+      Promise.all(operations)
+      .then(result => {
+        return new Promise((resolve, reject) => {
+          userMenu.reload((error, instance) => {
+            if (error) reject(error);
+            return resolve(instance);
+          });
+        });
+      }).then(userMenu => {
+        return new Promise((resolve, reject) => {
+          userMenu.updateAttributes({
+            status: 'SENT'
+          }, (error, userMenuUpdated) => {
+            if (error) reject(error);
+            
+            resolve(userMenuUpdated);
+          });
+        });
+      }).then(userMenuUpdated => {
+        callback(null, {
+          status: 'OK',
+          message: 'The menus were inserted correctly',
+          userMenu: userMenuUpdated
+        });
+      }).catch(error => {
+        throw error;
+      });
     });
   };
 
@@ -149,6 +199,34 @@ module.exports = function(UserMenu) {
     ],
     returns: {
       arg: 'userMenus',
+      type: 'object',
+    },
+  });
+
+  UserMenu.remoteMethod('saveMenus', {
+    http: {
+      path: '/SaveMenus',
+      verb: 'post',
+    },
+    accepts: [
+      {
+        arg: 'userId',
+        type: 'String',
+        required: true,
+      },
+      {
+        arg: 'date',
+        type: 'date',
+        required: true,
+      },
+      {
+        arg: 'menusId',
+        type: 'array',
+        require: true,
+      }
+    ],
+    returns: {
+      arg: 'result',
       type: 'object',
     },
   });
