@@ -1,0 +1,101 @@
+{
+  "menus": [
+    {
+      "title":"Kiwi fruit and fennel yoghurt",
+      "description":"A smooth yoghurt made with fresh kiwi fruit and fennel, almond milk | sugar | kiwi fruit | fennel",
+      "category":"healthy",
+      "meal":"breakfast",
+      "price":"25.0"
+    },{
+      "title":"Curly kale and ugli fruit salad",
+      "description":"A crisp salad featuring curly kale and fresh ugli fruit",
+      "category":"normal",
+      "meal":"lunch",
+      "price":"25.0"
+    },{
+      "title":"Shellfish and jerusalem artichoke salad",
+      "description":"A crisp salad featuring shellfish and fresh jerusalem artichoke",
+      "category":"healthy",
+      "meal":"dinner",
+      "price":"25.0"
+    },{
+      "title":"Sea bream and savoy cabbage salad",
+      "description":"Sea bream and savoy cabbage served on a bed of lettuce",
+      "category":"healthy",
+      "meal":"lunch",
+      "price":"25.0"
+    },{
+      "title":"Cheshire cheese and pork sausage meat salad",
+      "description":"A crisp salad featuring cheshire cheese and pork sausage meat",
+      "category":"normal",
+      "meal":"lunch",
+      "price":"25.0"
+    },{
+      "title":"Strawberry and ricotta tiramisu",
+      "description":"A silky tiramisu made with fresh strawberries and ricotta",
+      "category":"lunch",
+      "meal":"normal",
+      "price":"25.0"
+    },{
+      "title":"Duck and salmon crepes",
+      "description":"Fluffy crepes filled with duck and freshly-caught salmon",
+      "category":"normal",
+      "meal":"dinner",
+      "price":"25.0"
+    },{
+      "title":"Honey and oatbran muffins",
+      "description":"Fluffy muffins made with manuka honey and oatbran",
+      "category":"healthy",
+      "meal":"breakfast",
+      "price":"25.0"
+    },{
+      "title":"Pumpkin seed and peach muffins",
+      "description":"Crumbly muffins made with pumpkin seeds and fresh peach",
+      "category":"normal",
+      "meal":"breakfast",
+      "price":"25.0"
+    },{
+      "title":"Treacle and squash muffins",
+      "description":"Crumbly muffins made with black treacle and pattypan squash",
+      "category":"normal",
+      "meal":"breakfast",
+      "price":"25.0"
+    },{
+      "title":"Pumpkin and cardamom muffins",
+      "description":"Crumbly muffins made with spiced pumpkin and black cardamom",
+      "category":"healthy",
+      "meal":"dinner",
+      "price":"25.0"
+    },{
+      "title":"Cheese and chicken mousse",
+      "description":"A creamy mousse made with smoked cheese and free range chicken",
+      "category":"normal",
+      "meal":"lunch",
+      "price":"25.0"
+    },{
+      "title":"Chocolate and orange mousse",
+      "description":"A light mousse made with dark chocolate and juicy orange",
+      "category":"normal",
+      "meal":"lunch",
+      "price":"25.0"
+    },{
+      "title":"Milk chocolate and mango mousse",
+      "description":"A creamy mousse made with milk chocolate and fresh mango",
+      "category":"normal",
+      "meal":"dinner",
+      "price":"25.0"
+    },{
+      "title":"Coconut and vanilla mousse",
+      "description":"A light mousse made with fresh coconut and vanilla",
+      "category":"normal",
+      "meal":"dinner",
+      "price":"25.0"
+    },{
+      "title":"Caramel and cream mousse",
+      "description":"A creamy mousse made with caramel and clotted cream",
+      "category":"normal",
+      "meal":"dinner",
+      "price":"25.0"
+    }
+  ]
+}

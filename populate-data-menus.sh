@@ -9,6 +9,8 @@ readonly MENUS_URL="/menus"
 readonly DAY_MENUS_URL="/daymenus"
 readonly USER_MENUS_URL="/usermenus"
 
+DATA_INFO="populate-data-info.json"
+
 function show_help(){
   echo "$ meal-planning-api/populate-data.sh"
   echo "  >  Script that helps to populate data based on user's input"
@@ -74,11 +76,13 @@ function create_day_menu(){
 }
 
 function create_menu(){
-  local meal_id=$1
-  local category_id=$2
+  local title=$1
+  local description=$2
+  local price=$3
+  local meal_id=$4
+  local category_id=$5
 
-  local title=$(uuidgen)
-  local menu_data='{"title":"'${title}'","description":"'${title}' description","price":0,"mealId":"'${meal_id}'","categoryId":"'${category_id}'"}'
+  local menu_data='{"title":"'${title}'","description":"'${description}'","price":'${price}',"mealId":"'${meal_id}'","categoryId":"'${category_id}'"}'
   echo $(post ${MENUS_URL} "${menu_data}" | jq -r .id)
 }
 
@@ -103,15 +107,27 @@ function create_data(){
   local date=$1
   local categories=$2
   local meals=$3
+  local num_menus=$4
 
   echo ${date}
   local day_menu_id=$(create_day_menu ${date})
-  for meal in $(echo "${meals}"); do
-    for category in $(echo "${categories}"); do
-      local menu_id=$(create_menu "$(get_meal_id_by_code ${meal})" "$(get_category_id_by_code ${category})")
-      echo ${day_menu_id} ${menu_id}
-      local link_id=$(link_day_menu_with_menu ${day_menu_id} ${menu_id})
-      echo "${link_id} created."
+  for i in $(seq 1 ${num_menus}); do
+    for meal in $(echo "${meals}"); do
+      for category in $(echo "${categories}"); do
+        local menus_selected=$(jq '.menus[] | select (.category=="'${category}'" and .meal=="'${meal}'")' populate-data-info.json | jq -s .)
+        local menus_num=$(echo ${menus_selected} | jq -r '. | length')
+        local random_menu_num=$(echo $((0 + RANDOM % ${menus_num})))
+        local menu=$(echo ${menus_selected} | jq '.['${random_menu_num}']')
+
+        local menu_title=$(echo ${menu} | jq -r '.title')
+        local menu_description=$(echo ${menu} | jq -r '.description')
+        local menu_price=$(echo ${menu} | jq -r '.price')
+
+        local menu_id=$(create_menu "${menu_title}" "${menu_description}" "${menu_price}" "$(get_meal_id_by_code ${meal})" "$(get_category_id_by_code ${category})")
+        echo ${day_menu_id} ${menu_id}
+        local link_id=$(link_day_menu_with_menu ${day_menu_id} ${menu_id})
+        echo "${link_id} created."
+      done
     done
   done
 
@@ -122,6 +138,7 @@ FROM_DATE="$(date +%F)"
 TO_DATE=0
 CATEGORIES="$(get_categories | jq -r '.[].code')"
 MEALS="$(get_meals | jq -r '.[].code')"
+NUM_MENUS=1
 
 while test $# -gt 0; do
   option=$1
@@ -136,6 +153,9 @@ while test $# -gt 0; do
     ;;
     --to-date)
       TO_DATE=$2
+    ;;
+    --menus)
+      NUM_MENUS=$2
     ;;
     --categories)
       CATEGORIES=$(echo $2 | sed "s/,/ /g")
@@ -166,5 +186,5 @@ done
 
 for i in $(seq 0 ${TO_DATE}); do
     DATE="$(date -j -v +${i}d -f "%Y-%m-%d" "${FROM_DATE}" +%Y-%m-%d)"
-    create_data "${DATE}T06:00:00.000Z" "${CATEGORIES}" "${MEALS}"
+    create_data "${DATE}T06:00:00.000Z" "${CATEGORIES}" "${MEALS}" "${NUM_MENUS}"
 done
