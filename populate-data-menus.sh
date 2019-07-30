@@ -9,7 +9,7 @@ readonly MENUS_URL="/menus"
 readonly DAY_MENUS_URL="/daymenus"
 readonly USER_MENUS_URL="/usermenus"
 
-DATA_INFO="populate-data-info.json"
+DATA_INFO="populate-data-menus-info.json"
 
 function show_help(){
   echo "$ meal-planning-api/populate-data.sh"
@@ -114,7 +114,7 @@ function create_data(){
   for i in $(seq 1 ${num_menus}); do
     for meal in $(echo "${meals}"); do
       for category in $(echo "${categories}"); do
-        local menus_selected=$(jq '.menus[] | select (.category=="'${category}'" and .meal=="'${meal}'")' populate-data-info.json | jq -s .)
+        local menus_selected=$(jq '.menus[] | select (.category=="'${category}'" and .meal=="'${meal}'")' ${DATA_INFO} | jq -s .)
         local menus_num=$(echo ${menus_selected} | jq -r '. | length')
         local random_menu_num=$(echo $((0 + RANDOM % ${menus_num})))
         local menu=$(echo ${menus_selected} | jq '.['${random_menu_num}']')
