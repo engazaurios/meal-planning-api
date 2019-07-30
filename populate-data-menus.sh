@@ -115,8 +115,11 @@ function create_data(){
     for meal in $(echo "${meals}"); do
       for category in $(echo "${categories}"); do
         local menus_selected=$(jq '.menus[] | select (.category=="'${category}'" and .meal=="'${meal}'")' ${DATA_INFO} | jq -s .)
+        echo ${menus_selected}
         local menus_num=$(echo ${menus_selected} | jq -r '. | length')
+        echo ${menus_num}
         local random_menu_num=$(echo $((0 + RANDOM % ${menus_num})))
+        echo ${random_menu_num}
         local menu=$(echo ${menus_selected} | jq '.['${random_menu_num}']')
 
         local menu_title=$(echo ${menu} | jq -r '.title')
