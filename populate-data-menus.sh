@@ -185,6 +185,10 @@ while test $# -gt 0; do
 done
 
 for i in $(seq 0 ${TO_DATE}); do
+  if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    DATE="$(date +%Y-%m-%d -d "${FROM_DATE}+${i} days")"
+  else
     DATE="$(date -j -v +${i}d -f "%Y-%m-%d" "${FROM_DATE}" +%Y-%m-%d)"
+  fi
     create_data "${DATE}T06:00:00.000Z" "${CATEGORIES}" "${MEALS}" "${NUM_MENUS}"
 done
