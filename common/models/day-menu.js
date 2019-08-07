@@ -6,7 +6,7 @@ module.exports = function(DayMenu) {
     message: 'A DayMenu already exists for this date. You must remove it first'
   });
 
-  DayMenu.getMenusPerDate = function(startDate, endDate, callback) {
+  DayMenu.getDayMenusPerDate = function(startDate, endDate, callback) {
     DayMenu.find({
       where: {and: [
         {date: {gte: startDate}},
@@ -22,9 +22,9 @@ module.exports = function(DayMenu) {
 
   /* Remote methods definition */
 
-  DayMenu.remoteMethod('getMenusPerDate', {
+  DayMenu.remoteMethod('getDayMenusPerDate', {
     http: {
-      path: '/MenusPerDate/:startDate/:endDate',
+      path: '/DayMenusPerDate/:startDate/:endDate',
       verb: 'get',
     },
     accepts: [
