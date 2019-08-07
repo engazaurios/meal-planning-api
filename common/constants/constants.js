@@ -1,0 +1,15 @@
+const USER_MENU = {
+    PENDING: 'PENDING',
+    SENT: 'SENT',
+    NOT_AVAILABLE: 'NOT_AVAILABLE'
+};
+
+const DAY_MENU = {
+    OPEN: 'OPEN',
+    APPROVED: 'APPROVED'
+};
+
+const USER = {
+    ACTIVE: 'ACTIVE',
+    IN_ACTIVE: 'IN_ACTIVE'
+}

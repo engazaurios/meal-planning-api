@@ -7,13 +7,12 @@
     "validateUpsert": true
   },
   "scope": {
-    "include": "department"
+    "include": [
+      "department",
+      "roles"
+    ]
   },
   "properties": {
-    "id": {
-      "type": "string",
-      "required": true
-    },
     "name": {
       "type": "string",
       "required": true
@@ -44,6 +43,12 @@
       "options": {
         "nestRemoting": true
       }
+    },
+    "roles": {
+      "type": "hasMany",
+      "model": "Role",
+      "foreignKey": "principalId",
+      "through": "RoleMapping"
     }
   },
   "acls": [
