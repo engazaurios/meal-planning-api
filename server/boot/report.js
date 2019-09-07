@@ -17,8 +17,9 @@ module.exports = function(app) {
 
 
   app.get('/api/get-report', function(req, res, next) {
-    var unifiedReport = req.query.unified === 'true';
-    var workbook = new excel.Workbook();
+    var reportType = ['UNIFIED', 'TABS', 'RAW_DATA'].includes(req.query.reportType)
+      ? req.query.reportType
+      : 'UNIFIED';
 
     var objArray = [
       {
@@ -962,13 +963,11 @@ module.exports = function(app) {
         row = sheet.getRow(startRow + index);
         col = 1;
 
-        cell = row.getCell(col);
+        cell = row.getCell(col++);
         cell.value = [userData.user.name, userData.user.lastName].join(' ');
-        col += 1;
 
-        cell = row.getCell(col);
+        cell = row.getCell(col++);
         cell.value = userData.user.department ? userData.user.department.name : '';
-        col += 1;
 
         dates.forEach(function(date) {
           userDayMeals = userData.meals.find(function(dayMeal) {
@@ -984,12 +983,9 @@ module.exports = function(app) {
           // Breakfast
           if (!lunchTime || (lunchTime === 'breakfast')) {
             if (userDayMeals.meals.breakfast) {
-              row.getCell(col).value = userDayMeals.meals.breakfast.menu.name;
-              col += 1;
-              row.getCell(col).value = userDayMeals.meals.breakfast.status;
-              col += 1;
-              row.getCell(col).value = userDayMeals.meals.breakfast.cost;
-              col += 1;
+              row.getCell(col++).value = userDayMeals.meals.breakfast.menu.name;
+              row.getCell(col++).value = userDayMeals.meals.breakfast.status;
+              row.getCell(col++).value = userDayMeals.meals.breakfast.cost;
             } else {
               col += 3;
             }
@@ -998,12 +994,9 @@ module.exports = function(app) {
           // Lunch
           if (!lunchTime || (lunchTime === 'lunch')) {
             if (userDayMeals.meals.lunch) {
-              row.getCell(col).value = userDayMeals.meals.lunch.menu.name;
-              col += 1;
-              row.getCell(col).value = userDayMeals.meals.lunch.status;
-              col += 1;
-              row.getCell(col).value = userDayMeals.meals.lunch.cost;
-              col += 1;
+              row.getCell(col++).value = userDayMeals.meals.lunch.menu.name;
+              row.getCell(col++).value = userDayMeals.meals.lunch.status;
+              row.getCell(col++).value = userDayMeals.meals.lunch.cost;
             } else {
               col += 3;
             }
@@ -1012,12 +1005,9 @@ module.exports = function(app) {
           // Lunch
           if (!lunchTime || (lunchTime === 'dinner')) {
             if (userDayMeals.meals.dinner) {
-              row.getCell(col).value = userDayMeals.meals.dinner.menu.name;
-              col += 1;
-              row.getCell(col).value = userDayMeals.meals.dinner.status;
-              col += 1;
-              row.getCell(col).value = userDayMeals.meals.dinner.cost;
-              col += 1;
+              row.getCell(col++).value = userDayMeals.meals.dinner.menu.name;
+              row.getCell(col++).value = userDayMeals.meals.dinner.status;
+              row.getCell(col++).value = userDayMeals.meals.dinner.cost;
             } else {
               col += 3;
             }
@@ -1110,7 +1100,7 @@ module.exports = function(app) {
         excelUtils.applyBoldToCell(cell);
       }
 
-      // Print grand total
+      // Print grand total.
       cell = totalsRow.getCell(3 + dates.length * multiplier);
       cell.value = grandTotal;
       excelUtils.applyBordersToCell(cell, { left: true, top: true, bottom: true }, 'double');
@@ -1119,9 +1109,99 @@ module.exports = function(app) {
       sheet.mergeCells(lastRow, 3 + dates.length * multiplier, lastRow, 4 + dates.length * multiplier);
     }
 
+    function printReportRawData(sheet, data) {
+      data = Array.isArray(data) && data.length ? data : [];
 
-    var sheet;
-    var dates = objArray[0].meals.reduce(function(dates, userDayData) {
+      sheet.columns = [
+        { header: 'Empleado', width: 30 },
+        { header: 'Departamento', width: 20 },
+        { header: 'Fecha', width: 15 },
+        { header: 'Tiempo', width: 15 },
+        { header: 'Menu', width: 20 },
+        { header: 'Estado', width: 15 },
+        { header: 'Valor', width: 15 },
+      ];
+
+      sheet.getRow(1).eachCell(function(cell) {
+        excelUtils.applyAllBordersToCell(cell);
+        excelUtils.applyBoldToCell(cell);
+      });
+
+      var row, col, line, cell;
+      var username, department;
+      var grandTotal = 0;
+
+      var mealTimeMap = {
+        breakfast: 'Desayuno',
+        lunch: 'Almuerzo',
+        dinner: 'Cena',
+      };
+
+      line = 2;
+      data.forEach(function(userData) {
+        username = [userData.user.name, userData.user.lastName].join(' ');
+        department = userData.user.department ? userData.user.department.name : '';
+
+        userData.meals.forEach(function(userDayMeals) {
+          ['breakfast', 'lunch', 'dinner'].forEach(function(mealTime) {
+            if (!userDayMeals.meals[mealTime]) {
+              return;
+            }
+
+            row = sheet.getRow(line);
+            col = 1;
+
+            cell = row.getCell(col++);
+            cell.value = username;
+
+            cell = row.getCell(col++);
+            cell.value = department;
+
+            cell = row.getCell(col++);
+            cell.value = userDayMeals.day;
+
+            cell = row.getCell(col++);
+            cell.value = mealTimeMap[mealTime];
+
+            cell = row.getCell(col++);
+            cell.value = userDayMeals.meals[mealTime].menu.name;
+
+            cell = row.getCell(col++);
+            cell.value = userDayMeals.meals[mealTime].status;
+
+            cell = row.getCell(col++);
+            cell.value = userDayMeals.meals[mealTime].cost;
+
+            grandTotal += userDayMeals.meals[mealTime].cost;
+
+            line +=1;
+          });
+         });
+      });
+
+      var totalsRow = sheet.getRow(++line);
+
+      cell = totalsRow.getCell(1);
+      cell.value = 'TOTAL';
+
+      // Print grand total.
+      cell = totalsRow.getCell(sheet.columns.length);
+      cell.value = grandTotal;
+
+      // Apply border and bold to totals row.
+      for (var i = 1; i <= sheet.columns.length; i++) {
+        cell = totalsRow.getCell(i);
+
+        excelUtils.applyBordersToCell(cell, { top: true, bottom: true }, 'double');
+        excelUtils.applyBoldToCell(cell);
+      }
+    }
+
+
+    var workbook = new excel.Workbook();
+    var sheet, dates;
+
+    dates = objArray[0].meals.reduce(function(dates, userDayData) {
       if (!dates.includes(userDayData.day)) {
         dates.push(userDayData.day);
       }
@@ -1129,7 +1209,8 @@ module.exports = function(app) {
       return dates;
     }, []);
 
-    if (unifiedReport) {
+
+    if (reportType === 'UNIFIED') {
       sheet = workbook.addWorksheet('Report');
       sheet.views = [
         { state: 'frozen', xSplit: 1, ySplit: 3 }
@@ -1137,7 +1218,7 @@ module.exports = function(app) {
 
       printReportHeader(sheet, dates);
       printReportData(sheet, objArray, dates);
-    } else {
+    } else if (reportType === 'TABS') {
       sheet = workbook.addWorksheet('Desayuno');
       sheet.views = [
         { state: 'frozen', xSplit: 1, ySplit: 2 }
@@ -1161,11 +1242,23 @@ module.exports = function(app) {
 
       printReportHeader(sheet, dates, 'dinner');
       printReportData(sheet, objArray, dates, 'dinner');
+    } else if (reportType === 'RAW_DATA') {
+      sheet = workbook.addWorksheet('Report');
+      sheet.views = [
+        { state: 'frozen', xSplit: 0, ySplit: 1 }
+      ];
+
+      printReportRawData(sheet, objArray);
+    } else {
+      throw Error('Invalid report type: ' + reportType);
     }
+
+
+    // --------- SEND EXCEL RESPONSE ---------
+    // Ref: http://www.ihamvic.com/2018/07/25/create-and-download-excel-file-in-node-js/
 
     var tempFilePath = tempfile('.xlsx');
 
-    // Ref: http://www.ihamvic.com/2018/07/25/create-and-download-excel-file-in-node-js/
     workbook.xlsx.writeFile(tempFilePath).then(function() {
       var resOptions = {
         headers: {
