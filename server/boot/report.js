@@ -1,6 +1,7 @@
 var excel = require('exceljs');
 var tempfile = require('tempfile');
 var fs = require('fs');
+var excelUtils = require('../../common/utils/excel-utils');
 
 module.exports = function(app) {
   function deleteTempFile(file) {
@@ -835,40 +836,7 @@ module.exports = function(app) {
       { state: 'frozen', xSplit: 1, ySplit: 3 }
     ];
 
-    function applyAllBordersToCell(cell, type) {
-      type = ['thin', 'double'].includes(type) ? type : 'thin';
 
-      cell.border = {
-        top: { style: type },
-        right: { style: type },
-        bottom: { style: type },
-        left: { style: type },
-      };
-    }
-
-    function applyBoldToCell(cell) {
-      cell.style.font = { bold: true };
-    }
-
-    function applyVerticalAligmentMiddleToCell(cell) {
-      cell.alignment = { vertical: 'middle' };
-    }
-
-    function applyHorizontalAligmentCenterToCell(cell) {
-      cell.alignment = { horizontal: 'center' };
-    }
-
-    function applyBordersToCell(cell, borders, type) {
-      borders = (typeof borders === 'object') ? borders : {};
-      type = ['thin', 'double'].includes(type) ? type : 'thin';
-
-      cell.border = {
-        top: (borders.top === true) ? { style: type } : null,
-        right: (borders.right === true) ? { style: type } : null,
-        bottom: (borders.bottom === true) ? { style: type } : null,
-        left: (borders.left === true) ? { style: type } : null,
-      };
-    }
 
 
     function printReportHeader(sheet, dates) {
@@ -876,14 +844,14 @@ module.exports = function(app) {
       sheet.mergeCells(1, 1, 3, 1);
       sheet.mergeCells(1, 2, 3, 2);
 
-      applyVerticalAligmentMiddleToCell(sheet.getCell('A1'));
-      applyVerticalAligmentMiddleToCell(sheet.getCell('B1'));
+      excelUtils.applyVerticalAligmentMiddleToCell(sheet.getCell('A1'));
+      excelUtils.applyVerticalAligmentMiddleToCell(sheet.getCell('B1'));
 
-      applyBoldToCell(sheet.getCell('A1'));
-      applyBoldToCell(sheet.getCell('B1'));
+      excelUtils.applyBoldToCell(sheet.getCell('A1'));
+      excelUtils.applyBoldToCell(sheet.getCell('B1'));
 
-      applyAllBordersToCell(sheet.getCell('A1'));
-      applyAllBordersToCell(sheet.getCell('B1'));
+      excelUtils.applyAllBordersToCell(sheet.getCell('A1'));
+      excelUtils.applyAllBordersToCell(sheet.getCell('B1'));
 
       sheet.getColumn(1).width = 20;
       sheet.getColumn(2).width = 15;
@@ -903,9 +871,9 @@ module.exports = function(app) {
 
         cell.value = day;
 
-        applyHorizontalAligmentCenterToCell(cell);
-        applyBoldToCell(cell);
-        applyAllBordersToCell(cell);
+        excelUtils.applyHorizontalAligmentCenterToCell(cell);
+        excelUtils.applyBoldToCell(cell);
+        excelUtils.applyAllBordersToCell(cell);
 
         sheet.mergeCells(1, col, 1, col + 8);
 
@@ -920,9 +888,9 @@ module.exports = function(app) {
         cell = secondRow.getCell(col);
 
         cell.value = 'Desayuno';
-        applyHorizontalAligmentCenterToCell(cell);
-        applyBoldToCell(cell);
-        applyAllBordersToCell(cell);
+        excelUtils.applyHorizontalAligmentCenterToCell(cell);
+        excelUtils.applyBoldToCell(cell);
+        excelUtils.applyAllBordersToCell(cell);
 
         sheet.mergeCells(2, col, 2, col + 2);
         col += 3;
@@ -930,9 +898,9 @@ module.exports = function(app) {
         cell = secondRow.getCell(col);
 
         cell.value = 'Almuerzo';
-        applyHorizontalAligmentCenterToCell(cell);
-        applyBoldToCell(cell);
-        applyAllBordersToCell(cell);
+        excelUtils.applyHorizontalAligmentCenterToCell(cell);
+        excelUtils.applyBoldToCell(cell);
+        excelUtils.applyAllBordersToCell(cell);
 
         sheet.mergeCells(2, col, 2, col + 2);
         col += 3;
@@ -940,9 +908,9 @@ module.exports = function(app) {
         cell = secondRow.getCell(col);
 
         cell.value = 'Cena';
-        applyHorizontalAligmentCenterToCell(cell);
-        applyBoldToCell(cell);
-        applyAllBordersToCell(cell);
+        excelUtils.applyHorizontalAligmentCenterToCell(cell);
+        excelUtils.applyBoldToCell(cell);
+        excelUtils.applyAllBordersToCell(cell);
 
         sheet.mergeCells(2, col, 2, col + 2);
         col += 3;
@@ -956,26 +924,26 @@ module.exports = function(app) {
         for (var i = 0; i < 3; i++) {
           cell = thirdRow.getCell(col);
           cell.value = 'Menu';
-          applyHorizontalAligmentCenterToCell(cell);
-          applyBoldToCell(cell);
-          applyAllBordersToCell(cell);
+          excelUtils.applyHorizontalAligmentCenterToCell(cell);
+          excelUtils.applyBoldToCell(cell);
+          excelUtils.applyAllBordersToCell(cell);
           sheet.getColumn(col).width = 20;
 
           col += 1;
 
           cell = thirdRow.getCell(col);
           cell.value = 'Estado';
-          applyHorizontalAligmentCenterToCell(cell);
-          applyBoldToCell(cell);
-          applyAllBordersToCell(cell);
+          excelUtils.applyHorizontalAligmentCenterToCell(cell);
+          excelUtils.applyBoldToCell(cell);
+          excelUtils.applyAllBordersToCell(cell);
 
           col += 1;
 
           cell = thirdRow.getCell(col);
           cell.value = 'Valor';
-          applyHorizontalAligmentCenterToCell(cell);
-          applyBoldToCell(cell);
-          applyAllBordersToCell(cell);
+          excelUtils.applyHorizontalAligmentCenterToCell(cell);
+          excelUtils.applyBoldToCell(cell);
+          excelUtils.applyAllBordersToCell(cell);
 
           col += 1;
         }
@@ -1121,13 +1089,13 @@ module.exports = function(app) {
       for (var i = 1; i <= 4 + dates.length * 9; i++) {
         cell = row.getCell(i);
 
-        applyBordersToCell(cell, { top: true, bottom: true }, 'double');
-        applyBoldToCell(cell);
+        excelUtils.applyBordersToCell(cell, { top: true, bottom: true }, 'double');
+        excelUtils.applyBoldToCell(cell);
       }
 
       cell = row.getCell(3 + dates.length * 9);
       cell.value = grandTotal;
-      applyBordersToCell(cell, { left: true, top: true, bottom: true }, 'double');
+      excelUtils.applyBordersToCell(cell, { left: true, top: true, bottom: true }, 'double');
 
       // Merge grand total cells.
       sheet.mergeCells(lastRow, 3 + dates.length * 9, lastRow, 4 + dates.length * 9);

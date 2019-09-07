@@ -20,6 +20,7 @@ const getDayInfo = (day) => {
     'weekend': (day.getDay() == 0 || day.getDay() == 6),
   };
 };
+
 const getDates = (startDate, endDate) => {
   var currentDate = startDate;
   var dates = [];
