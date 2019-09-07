@@ -3,6 +3,7 @@
 
 var currentWeekNumber = require('current-week-number');
 var {getDates, getWholeWeek, getDateWithoutTime} = require('../helpers/date-helper.js');
+var {getData} = require('../helpers/data-provider.js');
 
 module.exports = function(UserMenu) {
   UserMenu.getMenusPerDate = function(userId, startDate, endDate, callback) {
@@ -130,6 +131,18 @@ module.exports = function(UserMenu) {
     });
   };
 
+  UserMenu.createReport = (startDate, endDate, costCenters, users, callback) => {
+    const models = UserMenu.app.models;
+    console.log(startDate);
+    console.log(endDate);
+    console.log(costCenters);
+    console.log(users);
+    const data = getData(models, startDate, endDate, costCenters, users);
+    data.then(result => {
+      callback(null, result);
+    });
+  };
+
   UserMenu.remoteMethod('getMenusPerDate', {
     http: {
       path: '/MenusPerDate/:userId/:startDate/:endDate',
@@ -223,6 +236,39 @@ module.exports = function(UserMenu) {
         arg: 'menusId',
         type: 'array',
         require: true,
+      }
+    ],
+    returns: {
+      arg: 'result',
+      type: 'object',
+    },
+  });
+
+  UserMenu.remoteMethod('createReport', {
+    http: {
+      path: '/Report',
+      verb: 'get',
+    },
+    accepts: [
+      {
+        arg: 'startDate',
+        type: 'date',
+        required: true,
+      },
+      {
+        arg: 'endDate',
+        type: 'date',
+        required: true,
+      },
+      {
+        arg: 'costCenters',
+        type: 'array',
+        require: false,
+      },
+      {
+        arg: 'users',
+        type: 'array',
+        require: false,
       }
     ],
     returns: {
