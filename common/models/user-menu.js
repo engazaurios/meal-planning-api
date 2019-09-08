@@ -38,35 +38,6 @@ module.exports = function(UserMenu) {
     });
   };
 
-  UserMenu.publishDayMenus = function(startDate, callback) {
-    var AppUser = UserMenu.app.models.AppUser;
-
-    if (startDate.getDay() != 1) {
-      callback(null, {message: 'Invalid date'});
-      return;
-    }
-    var dates = getWholeWeek(startDate);
-    AppUser.find({}).then(users => {
-      var list = users.reduce((accumulator, user) => {
-        var creations = dates.reduce((accumulator, date) => {
-          if (date.weekend) {
-            return accumulator;
-          }
-          var creation = UserMenu.create({
-            userId: user.id,
-            status: 'PENDING',
-            date: date.dateId,
-          });
-          return accumulator.concat(creation);
-        }, []);
-        return accumulator.concat(creations);
-      }, []);
-      Promise.all(list).then(result => {
-        callback(null, result);
-      });
-    });
-  };
-
   UserMenu.getUserMenuPerDate = function(userId, date, callback) {
     console.log(userId);
     console.log(date);
@@ -188,28 +159,6 @@ module.exports = function(UserMenu) {
     ],
     returns: {
       arg: 'menus',
-      type: 'array',
-    },
-  });
-
-  UserMenu.remoteMethod('publishDayMenus', {
-    http: {
-      path: '/PublishDayMenus',
-      verb: 'post',
-    },
-    accepts: [
-      {
-        arg: 'startDate',
-        type: 'date',
-        required: true,
-        description: 'The start day of the week, that you want to publish',
-        http: {
-          source: 'form',
-        },
-      },
-    ],
-    returns: {
-      arg: 'userMenus',
       type: 'array',
     },
   });
