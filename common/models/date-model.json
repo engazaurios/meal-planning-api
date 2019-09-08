@@ -8,8 +8,8 @@
   "properties": {
     "dateId": {
       "type": "date",
-      "required": true,
-      "id": true
+      "id": true,
+      "required": true
     },
     "day": {
       "type": "number",
