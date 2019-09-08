@@ -143,6 +143,27 @@ module.exports = function(UserMenu) {
     });
   };
 
+  UserMenu.approve = (startDate, userId, callback) => {
+    if (startDate.getDay() != 1) {
+      callback(null, {message: 'Invalid date'});
+      return;
+    }
+    const dates = getWholeWeek(startDate).map(date => date.dateId);
+
+    UserMenu.updateAll({
+      and: [
+        { userId: userId },
+        { date: { inq: dates } },
+      ]
+    },
+    {
+      status: 'APPROVED'
+    }).then(info => {
+      console.log(info);
+      callback(null, info);
+    });
+  }
+
   UserMenu.remoteMethod('getMenusPerDate', {
     http: {
       path: '/MenusPerDate/:userId/:startDate/:endDate',
@@ -270,6 +291,37 @@ module.exports = function(UserMenu) {
         type: 'array',
         require: false,
       }
+    ],
+    returns: {
+      arg: 'result',
+      type: 'object',
+    },
+  });
+
+  UserMenu.remoteMethod('approve', {
+    http: {
+      path: '/Approve',
+      verb: 'post',
+    },
+    accepts: [
+      {
+        arg: 'startDate',
+        type: 'date',
+        required: true,
+        description: 'The start day of the week, that you want to publish',
+        http: {
+          source: 'form',
+        },
+      },
+      {
+        arg: 'userId',
+        type: 'String',
+        required: true,
+        description: 'The user that is approving his menus',
+        http: {
+          source: 'form',
+        }
+      },
     ],
     returns: {
       arg: 'result',
