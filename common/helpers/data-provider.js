@@ -7,20 +7,24 @@ const getData = (models, startDate, endDate, costCenters, users) => {
 
   return UserMenu.find({
     include: 'user',
-    where: {and: [
-      {date: {gte: startDate}},
-      {date: {lte: endDate}},
-      {userId: (users) ? {inq: users} : {nin: []}}
-    ]},
+    where: {
+      and: [
+        { date: { gte: startDate }},
+        { date: { lte: endDate }},
+        { userId: (users) ? { inq: users } : { nin: [] }}
+      ]
+    },
   }).then(userMenus => {
     // Filter the included relation
     return userMenus.filter(userMenu => {
-      if (!userMenu.user() || !userMenu.user().costCenter()) {
-        return false;
-      }
+      // if (!userMenu.user() || !userMenu.user().costCenter()) {
+      //   return false;
+      // }
+
       if (costCenters && !costCenters.includes(userMenu.user().costCenterId.toString())) {
         return false;
       }
+
       return true;
     })
   });

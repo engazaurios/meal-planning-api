@@ -1,7 +1,11 @@
+var createError = require('http-errors');
 var excel = require('exceljs');
 var tempfile = require('tempfile');
 var fs = require('fs');
+var moment = require('moment');
+
 var excelUtils = require('../../common/utils/excel-utils');
+var dataProvider = require('../../common/helpers/data-provider.js');
 
 module.exports = function(app) {
   function deleteTempFile(file) {
@@ -17,9 +21,52 @@ module.exports = function(app) {
 
 
   app.get('/api/get-report', function(req, res, next) {
+    if (!req.query.from || !req.query.to || !req.query.reportType) {
+      return next(createError(400, 'Missing some parameters.'));
+    }
+
+    var from = new Date(req.query.from);
+    var to = new Date(req.query.to);
     var reportType = ['UNIFIED', 'TABS', 'RAW_DATA'].includes(req.query.reportType)
       ? req.query.reportType
       : 'UNIFIED';
+
+    var reportData = dataProvider.getData(
+      app.models,
+      from,
+      to,
+      req.query.costCenters,
+      req.query.users
+    ).then((data) => {
+      let parsedData = {};
+
+      data.forEach(function(userMenu) {
+        if (!parsedData[userMenu.userId]) {
+          parsedData[userMenu.userId] = {
+            user: userMenu.user(),
+            meals: {},
+          };
+        }
+
+        const dateKey = moment(userMenu.date).format('YYYY-MM-DD');
+
+        if (!parsedData[userMenu.userId].meals[dateKey]) {
+          parsedData[userMenu.userId].meals[dateKey] = {
+            day: dateKey
+          };
+        }
+
+        userMenu.menus().forEach(function(menu) {
+          if (['breakfast', 'lunch', 'dinner'].includes(menu.meal().code)) {
+            parsedData[userMenu.userId].meals[dateKey][menu.meal().code] = {
+              menu: menu.title,
+              cost: menu.price,
+              status: userMenu.status,
+            };
+          }
+        });
+      });
+    });
 
     var objArray = [
       {
@@ -36,418 +83,290 @@ module.exports = function(app) {
         meals: [
           {
             day: '2019-10-1',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-2',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-3',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-4',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-5',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-6',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-7',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-8',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-9',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-10',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-11',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-12',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-13',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-14',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-15',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           },
           {
             day: '2019-10-16',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
+            breakfast: {
+              menu: 'Arroz con platanos',
+              cost: 20,
+              status: 'SENT'
+            },
+            lunch: {
+              menu: 'Arroz con pollo',
+              cost: 30,
+              status: 'SENT'
+            },
+            dinner: {
+              menu: 'Arroz con frijoles',
+              cost: 15,
+              status: 'SENT'
             }
           }
         ]
@@ -463,372 +382,7 @@ module.exports = function(app) {
             name: 'employee'
           }
         },
-        meals: [
-          {
-            day: '2019-10-1',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-3',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-4',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-5',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-6',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-7',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-8',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-10',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-11',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-12',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-13',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-14',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-15',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          },
-          {
-            day: '2019-10-16',
-            meals: {
-              breakfast: {
-                menu: {
-                  name: 'Arroz con platanos'
-                },
-                cost: 20,
-                status: 'SENT'
-              },
-              lunch: {
-                menu: {
-                  name: 'Arroz con pollo'
-                },
-                cost: 30,
-                status: 'SENT'
-              },
-              dinner: {
-                menu: {
-                  name: 'Arroz con frijoles'
-                },
-                cost: 15,
-                status: 'SENT'
-              }
-            }
-          }
-        ]
+        meals: []
       },
     ];
 
@@ -982,10 +536,10 @@ module.exports = function(app) {
 
           // Breakfast
           if (!lunchTime || (lunchTime === 'breakfast')) {
-            if (userDayMeals.meals.breakfast) {
-              row.getCell(col++).value = userDayMeals.meals.breakfast.menu.name;
-              row.getCell(col++).value = userDayMeals.meals.breakfast.status;
-              row.getCell(col++).value = userDayMeals.meals.breakfast.cost;
+            if (userDayMeals.breakfast) {
+              row.getCell(col++).value = userDayMeals.breakfast.menu;
+              row.getCell(col++).value = userDayMeals.breakfast.status;
+              row.getCell(col++).value = userDayMeals.breakfast.cost;
             } else {
               col += 3;
             }
@@ -993,10 +547,10 @@ module.exports = function(app) {
 
           // Lunch
           if (!lunchTime || (lunchTime === 'lunch')) {
-            if (userDayMeals.meals.lunch) {
-              row.getCell(col++).value = userDayMeals.meals.lunch.menu.name;
-              row.getCell(col++).value = userDayMeals.meals.lunch.status;
-              row.getCell(col++).value = userDayMeals.meals.lunch.cost;
+            if (userDayMeals.lunch) {
+              row.getCell(col++).value = userDayMeals.lunch.menu;
+              row.getCell(col++).value = userDayMeals.lunch.status;
+              row.getCell(col++).value = userDayMeals.lunch.cost;
             } else {
               col += 3;
             }
@@ -1004,10 +558,10 @@ module.exports = function(app) {
 
           // Lunch
           if (!lunchTime || (lunchTime === 'dinner')) {
-            if (userDayMeals.meals.dinner) {
-              row.getCell(col++).value = userDayMeals.meals.dinner.menu.name;
-              row.getCell(col++).value = userDayMeals.meals.dinner.status;
-              row.getCell(col++).value = userDayMeals.meals.dinner.cost;
+            if (userDayMeals.dinner) {
+              row.getCell(col++).value = userDayMeals.dinner.menu;
+              row.getCell(col++).value = userDayMeals.dinner.status;
+              row.getCell(col++).value = userDayMeals.dinner.cost;
             } else {
               col += 3;
             }
@@ -1033,8 +587,8 @@ module.exports = function(app) {
             return dayMeal.day === date;
           });
 
-          if (userDayMeals && userDayMeals.meals.breakfast) {
-            sum += parseFloat(userDayMeals.meals.breakfast.cost);
+          if (userDayMeals && userDayMeals.breakfast) {
+            sum += parseFloat(userDayMeals.breakfast.cost);
           }
 
           return sum;
@@ -1046,8 +600,8 @@ module.exports = function(app) {
             return dayMeal.day === date;
           });
 
-          if (userDayMeals && userDayMeals.meals.lunch) {
-            sum += parseFloat(userDayMeals.meals.lunch.cost);
+          if (userDayMeals && userDayMeals.lunch) {
+            sum += parseFloat(userDayMeals.lunch.cost);
           }
 
           return sum;
@@ -1059,8 +613,8 @@ module.exports = function(app) {
             return dayMeal.day === date;
           });
 
-          if (userDayMeals && userDayMeals.meals.dinner) {
-            sum += parseFloat(userDayMeals.meals.dinner.cost);
+          if (userDayMeals && userDayMeals.dinner) {
+            sum += parseFloat(userDayMeals.dinner.cost);
           }
 
           return sum;
@@ -1164,7 +718,7 @@ module.exports = function(app) {
             cell.value = mealTimeMap[mealTime];
 
             cell = row.getCell(col++);
-            cell.value = userDayMeals.meals[mealTime].menu.name;
+            cell.value = userDayMeals.meals[mealTime].menu;
 
             cell = row.getCell(col++);
             cell.value = userDayMeals.meals[mealTime].status;
