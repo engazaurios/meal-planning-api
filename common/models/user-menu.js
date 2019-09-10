@@ -3,6 +3,7 @@
 
 var currentWeekNumber = require('current-week-number');
 var {getDates, getWholeWeek, getDateWithoutTime} = require('../helpers/date-helper.js');
+var {getData} = require('../helpers/data-provider.js');
 
 module.exports = function(UserMenu) {
   UserMenu.getMenusPerDate = function(userId, startDate, endDate, callback) {
@@ -34,35 +35,6 @@ module.exports = function(UserMenu) {
       }));
     }).then(function(result) {
       callback(null, result);
-    });
-  };
-
-  UserMenu.publishDayMenus = function(startDate, callback) {
-    var AppUser = UserMenu.app.models.AppUser;
-
-    if (startDate.getDay() != 1) {
-      callback(null, {message: 'Invalid date'});
-      return;
-    }
-    var dates = getWholeWeek(startDate);
-    AppUser.find({}).then(users => {
-      var list = users.reduce((accumulator, user) => {
-        var creations = dates.reduce((accumulator, date) => {
-          if (date.weekend) {
-            return accumulator;
-          }
-          var creation = UserMenu.create({
-            userId: user.id,
-            status: 'PENDING',
-            date: date.dateId,
-          });
-          return accumulator.concat(creation);
-        }, []);
-        return accumulator.concat(creations);
-      }, []);
-      Promise.all(list).then(result => {
-        callback(null, result);
-      });
     });
   };
 
@@ -130,6 +102,39 @@ module.exports = function(UserMenu) {
     });
   };
 
+  UserMenu.createReport = (startDate, endDate, costCenters, users, callback) => {
+    const models = UserMenu.app.models;
+    console.log(startDate);
+    console.log(endDate);
+    console.log(costCenters);
+    console.log(users);
+    const data = getData(models, startDate, endDate, costCenters, users);
+    data.then(result => {
+      callback(null, result);
+    });
+  };
+
+  UserMenu.approve = (startDate, userId, callback) => {
+    if (startDate.getDay() != 1) {
+      callback(null, {message: 'Invalid date'});
+      return;
+    }
+    const dates = getWholeWeek(startDate).map(date => date.dateId);
+
+    UserMenu.updateAll({
+      and: [
+        { userId: userId },
+        { date: { inq: dates } },
+      ]
+    },
+    {
+      status: 'APPROVED'
+    }).then(info => {
+      console.log(info);
+      callback(null, info);
+    });
+  }
+
   UserMenu.remoteMethod('getMenusPerDate', {
     http: {
       path: '/MenusPerDate/:userId/:startDate/:endDate',
@@ -154,28 +159,6 @@ module.exports = function(UserMenu) {
     ],
     returns: {
       arg: 'menus',
-      type: 'array',
-    },
-  });
-
-  UserMenu.remoteMethod('publishDayMenus', {
-    http: {
-      path: '/PublishDayMenus',
-      verb: 'post',
-    },
-    accepts: [
-      {
-        arg: 'startDate',
-        type: 'date',
-        required: true,
-        description: 'The start day of the week, that you want to publish',
-        http: {
-          source: 'form',
-        },
-      },
-    ],
-    returns: {
-      arg: 'userMenus',
       type: 'array',
     },
   });
@@ -224,6 +207,70 @@ module.exports = function(UserMenu) {
         type: 'array',
         require: true,
       }
+    ],
+    returns: {
+      arg: 'result',
+      type: 'object',
+    },
+  });
+
+  UserMenu.remoteMethod('createReport', {
+    http: {
+      path: '/Report',
+      verb: 'get',
+    },
+    accepts: [
+      {
+        arg: 'startDate',
+        type: 'date',
+        required: true,
+      },
+      {
+        arg: 'endDate',
+        type: 'date',
+        required: true,
+      },
+      {
+        arg: 'costCenters',
+        type: 'array',
+        require: false,
+      },
+      {
+        arg: 'users',
+        type: 'array',
+        require: false,
+      }
+    ],
+    returns: {
+      arg: 'result',
+      type: 'object',
+    },
+  });
+
+  UserMenu.remoteMethod('approve', {
+    http: {
+      path: '/Approve',
+      verb: 'post',
+    },
+    accepts: [
+      {
+        arg: 'startDate',
+        type: 'date',
+        required: true,
+        description: 'The start day of the week, that you want to publish',
+        http: {
+          source: 'form',
+        },
+      },
+      {
+        arg: 'userId',
+        type: 'String',
+        required: true,
+        description: 'The user that is approving his menus',
+        http: {
+          source: 'form',
+        }
+      },
     ],
     returns: {
       arg: 'result',

@@ -9,7 +9,8 @@
   "scope": {
     "include": [
       "department",
-      "roles"
+      "roles",
+      "costCenter"
     ]
   },
   "properties": {
@@ -49,6 +50,11 @@
       "model": "Role",
       "foreignKey": "principalId",
       "through": "RoleMapping"
+    },
+    "costCenter": {
+      "type": "belongsTo",
+      "model": "CostCenter",
+      "foreignKey": "costCenterId"
     }
   },
   "acls": [

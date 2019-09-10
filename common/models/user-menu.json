@@ -12,10 +12,6 @@
     ]
   },
   "properties": {
-    "userId": {
-      "type": "string",
-      "required": true
-    },
     "status": {
       "type": "string",
       "required": true
@@ -31,6 +27,11 @@
       "type": "hasAndBelongsToMany",
       "model": "Menu",
       "foreignKey": ""
+    },
+    "user": {
+      "type": "belongsTo",
+      "model": "AppUser",
+      "foreignKey": "userId"
     }
   },
   "acls": [],
