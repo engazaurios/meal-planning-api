@@ -1,0 +1,40 @@
+{
+  "name": "Order",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "attendance": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "validations": [],
+  "relations": {
+    "menu": {
+      "type": "belongsTo",
+      "model": "Menu",
+      "foreignKey": "menuId"
+    },
+    "userMenu": {
+      "type": "belongsTo",
+      "model": "UserMenu",
+      "foreignKey": "userMenuId"
+    }
+  },
+  "acls": [],
+  "methods": {},
+  "indexes": {
+    "uniqueConstraint": {
+      "keys": {
+         "menuId": 1,
+         "userMenuId": 1
+       },
+       "options": {
+         "unique": true
+       }
+    }
+  }
+}

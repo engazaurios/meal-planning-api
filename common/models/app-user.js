@@ -8,7 +8,6 @@ module.exports = function(AppUser) {
     if (ctx.instance) {
       if (ctx.isNewInstance) {
         var RoleMapping = AppUser.app.models.RoleMapping;
-        console.log(ctx.instance);
         RoleMapping.create({
           principalType: 'USER',
           principalId: ctx.instance.id,
@@ -17,7 +16,6 @@ module.exports = function(AppUser) {
           if (err) {
             return console.log(err);
           }
-          console.log(roleMapping);
         });
       }
     }
@@ -103,7 +101,6 @@ module.exports = function(AppUser) {
           }, function(err, role) {
             if (err) throw err;
     
-            //make bob an admin
             role.principals.create({
               principalType: RoleMapping.USER,
               principalId: users[2].id,

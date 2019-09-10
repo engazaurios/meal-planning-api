@@ -24,9 +24,9 @@
   "validations": [],
   "relations": {
     "menus": {
-      "type": "hasAndBelongsToMany",
+      "type": "hasMany",
       "model": "Menu",
-      "foreignKey": ""
+      "through": "Order"
     },
     "user": {
       "type": "belongsTo",
