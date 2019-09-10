@@ -62,6 +62,12 @@
       "principalType": "ROLE",
       "principalId": "admin",
       "permission": "ALLOW"
+    },
+    {
+      "permission": "ALLOW",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "property": "loginWithToken"
     }
   ],
   "methods": {}

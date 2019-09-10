@@ -37,6 +37,31 @@ module.exports = function(AppUser) {
     message: 'Email already exists',
   });
 
+  AppUser.loginWithToken = (token, callback) => {
+    const AccessToken = AppUser.app.models.AccessToken;
+    AccessToken.resolve(token, (error, accessToken) => {
+      if (error || !accessToken) {
+        callback('Invalid token');
+        return;
+      }
+
+      AppUser.findOne({id: accessToken.userId})
+      .then(user => {
+        const response = {
+          id: accessToken.id,
+          ttl: accessToken.ttl,
+          created: accessToken.created,
+          userId: accessToken.userId,
+          user: user
+        }
+        callback(null, response);
+      }).catch(error => {
+        callback(error);
+      });
+
+    });
+  };
+
   AppUser.createDefaultUsers = function() {
     var Role = AppUser.app.models.Role;
     var RoleMapping = AppUser.app.models.RoleMapping;
@@ -126,5 +151,27 @@ module.exports = function(AppUser) {
       'read',
       'write',
     ], 
+  });
+
+  AppUser.remoteMethod('loginWithToken', {
+    http: {
+      path: '/LoginWithToken',
+      verb: 'post',
+    },
+    accepts: [
+      {
+        arg: 'token',
+        type: 'String',
+        required: true,
+        description: 'The token to log in',
+        http: {
+          source: 'form',
+        },
+      },
+    ],
+    returns: {
+      type: 'object',
+      root: true,
+    },
   });
 };
