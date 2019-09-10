@@ -51,6 +51,18 @@ module.exports = function(Order) {
     })
   };
 
+  Order.currentMeal = (callback) => {
+    const Meal = Order.app.models.Meal;
+    const mealCode = getCurrentMeal();
+
+    Meal.findOne({code: mealCode})
+    .then(meal=> {
+      callback(null, meal);
+    }).catch(error=>{
+      callback(error);
+    });
+  };
+
   Order.remoteMethod('attendance', {
     http: {
       path: '/Attendance',
@@ -67,6 +79,18 @@ module.exports = function(Order) {
         },
       },
     ],
+    returns: {
+      arg: 'result',
+      type: 'object',
+    },
+  });
+
+  Order.remoteMethod('currentMeal', {
+    http: {
+      path: '/CurrentMeal',
+      verb: 'get',
+    },
+    accepts: [],
     returns: {
       arg: 'result',
       type: 'object',
