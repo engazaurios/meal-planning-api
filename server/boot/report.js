@@ -31,366 +31,11 @@ module.exports = function(app) {
       ? req.query.reportType
       : 'UNIFIED';
 
-    var reportData = dataProvider.getData(
-      app.models,
-      from,
-      to,
-      req.query.costCenters,
-      req.query.users
-    ).then((data) => {
-      let parsedData = {};
-
-      data.forEach(function(userMenu) {
-        if (!parsedData[userMenu.userId]) {
-          parsedData[userMenu.userId] = {
-            user: userMenu.user(),
-            meals: {},
-          };
-        }
-
-        const dateKey = moment(userMenu.date).format('YYYY-MM-DD');
-
-        if (!parsedData[userMenu.userId].meals[dateKey]) {
-          parsedData[userMenu.userId].meals[dateKey] = {
-            day: dateKey
-          };
-        }
-
-        userMenu.menus().forEach(function(menu) {
-          if (['breakfast', 'lunch', 'dinner'].includes(menu.meal().code)) {
-            parsedData[userMenu.userId].meals[dateKey][menu.meal().code] = {
-              menu: menu.title,
-              cost: menu.price,
-              status: userMenu.status,
-            };
-          }
-        });
-      });
-    });
-
-    var objArray = [
-      {
-        user: {
-          name: 'James',
-          lastName: 'Luis',
-          department: {
-            name: 'Informatica'
-          },
-          role: {
-            name: 'employee'
-          }
-        },
-        meals: [
-          {
-            day: '2019-10-1',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-2',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-3',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-4',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-5',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-6',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-7',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-8',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-9',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-10',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-11',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-12',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-13',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-14',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-15',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          },
-          {
-            day: '2019-10-16',
-            breakfast: {
-              menu: 'Arroz con platanos',
-              cost: 20,
-              status: 'SENT'
-            },
-            lunch: {
-              menu: 'Arroz con pollo',
-              cost: 30,
-              status: 'SENT'
-            },
-            dinner: {
-              menu: 'Arroz con frijoles',
-              cost: 15,
-              status: 'SENT'
-            }
-          }
-        ]
-      },
-      {
-        user: {
-          name: 'Carlos',
-          lastName: 'Salazar',
-          department: {
-            name: 'Planta'
-          },
-          role: {
-            name: 'employee'
-          }
-        },
-        meals: []
-      },
-    ];
-
 
     function printReportHeader(sheet, dates, lunchTime) {
       lunchTime = ['breakfast', 'lunch', 'dinner'].includes(lunchTime) ? lunchTime : null;
 
-      sheet.addRow(['Empleado', 'Departamento']);
+      sheet.addRow(['Empleado', 'Centro de costo']);
       sheet.mergeCells(1, 1, lunchTime ? 2 : 3, 1);
       sheet.mergeCells(1, 2, lunchTime ? 2 : 3, 2);
 
@@ -415,10 +60,10 @@ module.exports = function(app) {
       var datesRow = sheet.getRow(1);
 
       col = 3;
-      dates.forEach(function(day) {
+      dates.forEach(function(date) {
         cell = datesRow.getCell(col);
 
-        cell.value = day;
+        cell.value = date;
 
         excelUtils.applyHorizontalAligmentCenterToCell(cell);
         excelUtils.applyBoldToCell(cell);
@@ -434,7 +79,7 @@ module.exports = function(app) {
         var lunchTimesRow = sheet.getRow(2);
 
         col = 3;
-        dates.forEach(function(day) {
+        dates.forEach(function(date) {
           cell = lunchTimesRow.getCell(col);
 
           cell.value = 'Desayuno';
@@ -471,7 +116,7 @@ module.exports = function(app) {
       var menusRow = sheet.getRow(lunchTime ? 2 : 3);
 
       col = 3;
-      dates.forEach(function(day) {
+      dates.forEach(function(date) {
         for (var i = 0; i < (lunchTime ? 1 : 3); i++) {
           cell = menusRow.getCell(col);
           cell.value = 'Menu';
@@ -521,12 +166,10 @@ module.exports = function(app) {
         cell.value = [userData.user.name, userData.user.lastName].join(' ');
 
         cell = row.getCell(col++);
-        cell.value = userData.user.department ? userData.user.department.name : '';
+        cell.value = userData.user.costCenter ? userData.user.costCenter.name : '';
 
         dates.forEach(function(date) {
-          userDayMeals = userData.meals.find(function(dayMeal) {
-            return dayMeal.day === date;
-          });
+          userDayMeals = userData.meals[date];
 
           if (!userDayMeals) {
             col += multiplier;
@@ -582,46 +225,17 @@ module.exports = function(app) {
       col = 5;
       dates.forEach(function(date) {
         // Breakfast total
-        breakfastTotal = data.reduce(function(sum, userData) {
-          userDayMeals = userData.meals.find(function(dayMeal) {
-            return dayMeal.day === date;
-          });
-
-          if (userDayMeals && userDayMeals.breakfast) {
-            sum += parseFloat(userDayMeals.breakfast.cost);
-          }
-
-          return sum;
-        }, 0);
-
-        // Lunch total
-        lunchTotal = data.reduce(function(sum, userData) {
-          userDayMeals = userData.meals.find(function(dayMeal) {
-            return dayMeal.day === date;
-          });
-
-          if (userDayMeals && userDayMeals.lunch) {
-            sum += parseFloat(userDayMeals.lunch.cost);
-          }
-
-          return sum;
-        }, 0);
-
-        // Breakfast total
-        dinnerTotal = data.reduce(function(sum, userData) {
-          userDayMeals = userData.meals.find(function(dayMeal) {
-            return dayMeal.day === date;
-          });
-
-          if (userDayMeals && userDayMeals.dinner) {
-            sum += parseFloat(userDayMeals.dinner.cost);
-          }
-
-          return sum;
-        }, 0);
-
-
         if (!lunchTime || (lunchTime === 'breakfast')) {
+          breakfastTotal = data.reduce(function(sum, userData) {
+            userDayMeals = userData.meals[date];
+
+            if (userDayMeals && userDayMeals.breakfast) {
+              sum += userDayMeals.breakfast.cost;
+            }
+
+            return sum;
+          }, 0);
+
           cell = totalsRow.getCell(col);
           cell.value = breakfastTotal;
           col += 3;
@@ -629,7 +243,18 @@ module.exports = function(app) {
           grandTotal += breakfastTotal;
         }
 
+        // Lunch total
         if (!lunchTime || (lunchTime === 'lunch')) {
+          lunchTotal = data.reduce(function(sum, userData) {
+            userDayMeals = userData.meals[date];
+
+            if (userDayMeals && userDayMeals.lunch) {
+              sum += userDayMeals.lunch.cost;
+            }
+
+            return sum;
+          }, 0);
+
           cell = totalsRow.getCell(col);
           cell.value = lunchTotal;
           col += 3;
@@ -637,7 +262,18 @@ module.exports = function(app) {
           grandTotal += lunchTotal;
         }
 
+        // Dinner total
         if (!lunchTime || (lunchTime === 'dinner')) {
+          dinnerTotal = data.reduce(function(sum, userData) {
+            userDayMeals = userData.meals[date];
+
+            if (userDayMeals && userDayMeals.dinner) {
+              sum += userDayMeals.dinner.cost;
+            }
+
+            return sum;
+          }, 0);
+
           cell = totalsRow.getCell(col);
           cell.value = dinnerTotal;
           col += 3;
@@ -668,7 +304,7 @@ module.exports = function(app) {
 
       sheet.columns = [
         { header: 'Empleado', width: 30 },
-        { header: 'Departamento', width: 20 },
+        { header: 'Centro de costo', width: 20 },
         { header: 'Fecha', width: 15 },
         { header: 'Tiempo', width: 15 },
         { header: 'Menu', width: 20 },
@@ -682,7 +318,7 @@ module.exports = function(app) {
       });
 
       var row, col, line, cell;
-      var username, department;
+      var username, costCenter;
       var grandTotal = 0;
 
       var mealTimeMap = {
@@ -694,11 +330,11 @@ module.exports = function(app) {
       line = 2;
       data.forEach(function(userData) {
         username = [userData.user.name, userData.user.lastName].join(' ');
-        department = userData.user.department ? userData.user.department.name : '';
+        costCenter = userData.user.costCenter ? userData.user.costCenter.name : '';
 
-        userData.meals.forEach(function(userDayMeals) {
+        Object.values(userData.meals).forEach(function(userDayMeals) {
           ['breakfast', 'lunch', 'dinner'].forEach(function(mealTime) {
-            if (!userDayMeals.meals[mealTime]) {
+            if (!userDayMeals[mealTime]) {
               return;
             }
 
@@ -709,24 +345,24 @@ module.exports = function(app) {
             cell.value = username;
 
             cell = row.getCell(col++);
-            cell.value = department;
+            cell.value = costCenter;
 
             cell = row.getCell(col++);
-            cell.value = userDayMeals.day;
+            cell.value = userDayMeals.date;
 
             cell = row.getCell(col++);
             cell.value = mealTimeMap[mealTime];
 
             cell = row.getCell(col++);
-            cell.value = userDayMeals.meals[mealTime].menu;
+            cell.value = userDayMeals[mealTime].menu;
 
             cell = row.getCell(col++);
-            cell.value = userDayMeals.meals[mealTime].status;
+            cell.value = userDayMeals[mealTime].status;
 
             cell = row.getCell(col++);
-            cell.value = userDayMeals.meals[mealTime].cost;
+            cell.value = userDayMeals[mealTime].cost;
 
-            grandTotal += userDayMeals.meals[mealTime].cost;
+            grandTotal += userDayMeals[mealTime].cost;
 
             line +=1;
           });
@@ -751,81 +387,164 @@ module.exports = function(app) {
       }
     }
 
+    function createReportWithData(parsedData, reportType) {
+      var workbook = new excel.Workbook();
+      var sheet, dates;
+      var arrayData = Object.values(parsedData);
 
-    var workbook = new excel.Workbook();
-    var sheet, dates;
+      dates = arrayData.reduce(function(carry, userData) {
+        Object.keys(userData.meals).forEach(function(userMenuDay) {
+          if (!carry.includes(userMenuDay)) {
+            carry.push(userMenuDay);
+          }
+        });
 
-    dates = objArray[0].meals.reduce(function(dates, userDayData) {
-      if (!dates.includes(userDayData.day)) {
-        dates.push(userDayData.day);
+        return carry;
+      }, []);
+
+      if (reportType === 'UNIFIED') {
+        sheet = workbook.addWorksheet('Report');
+        sheet.views = [
+          { state: 'frozen', xSplit: 1, ySplit: 3 }
+        ];
+
+        printReportHeader(sheet, dates);
+        printReportData(sheet, arrayData, dates);
+      } else if (reportType === 'TABS') {
+        sheet = workbook.addWorksheet('Desayuno');
+        sheet.views = [
+          { state: 'frozen', xSplit: 1, ySplit: 2 }
+        ];
+
+        printReportHeader(sheet, dates, 'breakfast');
+        printReportData(sheet, arrayData, dates, 'breakfast');
+
+        sheet = workbook.addWorksheet('Almuerzo');
+        sheet.views = [
+          { state: 'frozen', xSplit: 1, ySplit: 2 }
+        ];
+
+        printReportHeader(sheet, dates, 'lunch');
+        printReportData(sheet, arrayData, dates, 'lunch');
+
+        sheet = workbook.addWorksheet('Cena');
+        sheet.views = [
+          { state: 'frozen', xSplit: 1, ySplit: 2 }
+        ];
+
+        printReportHeader(sheet, dates, 'dinner');
+        printReportData(sheet, arrayData, dates, 'dinner');
+      } else if (reportType === 'RAW_DATA') {
+        sheet = workbook.addWorksheet('Report');
+        sheet.views = [
+          { state: 'frozen', xSplit: 0, ySplit: 1 }
+        ];
+
+        printReportRawData(sheet, arrayData);
+      } else {
+        throw Error('Invalid report type: ' + reportType);
       }
 
-      return dates;
-    }, []);
+      return workbook;
+    }
 
+    function parseData(rawData) {
+      let parsedData = {};
 
-    if (reportType === 'UNIFIED') {
-      sheet = workbook.addWorksheet('Report');
-      sheet.views = [
-        { state: 'frozen', xSplit: 1, ySplit: 3 }
-      ];
+      rawData.forEach(function(userMenu) {
+        if (!parsedData[userMenu.userId]) {
+          let user = userMenu.user();
 
-      printReportHeader(sheet, dates);
-      printReportData(sheet, objArray, dates);
-    } else if (reportType === 'TABS') {
-      sheet = workbook.addWorksheet('Desayuno');
-      sheet.views = [
-        { state: 'frozen', xSplit: 1, ySplit: 2 }
-      ];
+          parsedData[userMenu.userId] = {
+            user: {
+              id: userMenu.userId,
+              name: user.name,
+              lastName: user.lastName,
+              costCenter: {
+                name: user.costCenter() ? user.costCenter().name : ''
+              },
+              role: {
+                name: user.roles().length ? user.roles()[0].name : ''
+              }
+            },
+            meals: {},
+          };
+        }
 
-      printReportHeader(sheet, dates, 'breakfast');
-      printReportData(sheet, objArray, dates, 'breakfast');
+        const dateKey = moment(userMenu.date).format('YYYY-MM-DD');
 
-      sheet = workbook.addWorksheet('Almuerzo');
-      sheet.views = [
-        { state: 'frozen', xSplit: 1, ySplit: 2 }
-      ];
+        if (!parsedData[userMenu.userId].meals[dateKey]) {
+          parsedData[userMenu.userId].meals[dateKey] = {
+            date: dateKey
+          };
+        }
 
-      printReportHeader(sheet, dates, 'lunch');
-      printReportData(sheet, objArray, dates, 'lunch');
+        userMenu.menus().forEach(function(menu) {
+          if (['breakfast', 'lunch', 'dinner'].includes(menu.meal().code)) {
+            parsedData[userMenu.userId].meals[dateKey][menu.meal().code] = {
+              menu: menu.title,
+              cost: menu.price,
+              status: userMenu.status,
+            };
+          }
+        });
 
-      sheet = workbook.addWorksheet('Cena');
-      sheet.views = [
-        { state: 'frozen', xSplit: 1, ySplit: 2 }
-      ];
+        // If user has no meals for current date, refuse the date from data.
+        if (
+          !parsedData[userMenu.userId].meals[dateKey].breakfast
+          && !parsedData[userMenu.userId].meals[dateKey].lunch
+          && !parsedData[userMenu.userId].meals[dateKey].dinner
+        ) {
+          delete parsedData[userMenu.userId].meals[dateKey];
+        }
+      });
 
-      printReportHeader(sheet, dates, 'dinner');
-      printReportData(sheet, objArray, dates, 'dinner');
-    } else if (reportType === 'RAW_DATA') {
-      sheet = workbook.addWorksheet('Report');
-      sheet.views = [
-        { state: 'frozen', xSplit: 0, ySplit: 1 }
-      ];
+      Object.values(parsedData).forEach(function(userData) {
+        console.log('------------------------');
+        console.log('User:\n', userData.user);
+        Object.values(userData.meals).forEach(function(userDayMeal) {
+          console.log('-----------');
+          console.log('Date:', userDayMeal.date);
+          console.log('Breakfast:', userDayMeal.breakfast);
+          console.log('Lunch:', userDayMeal.lunch);
+          console.log('Dinner:', userDayMeal.dinner);
+        });
+      });
 
-      printReportRawData(sheet, objArray);
-    } else {
-      throw Error('Invalid report type: ' + reportType);
+      return parsedData;
     }
 
 
-    // --------- SEND EXCEL RESPONSE ---------
-    // Ref: http://www.ihamvic.com/2018/07/25/create-and-download-excel-file-in-node-js/
 
-    var tempFilePath = tempfile('.xlsx');
+    var reportData = dataProvider.getData(
+      app.models,
+      from,
+      to,
+      req.query.costCenters,
+      req.query.users
+    ).then((data) => {
+      const parsedData = parseData(data);
+      const workbook = createReportWithData(parsedData, reportType);
 
-    workbook.xlsx.writeFile(tempFilePath).then(function() {
-      var resOptions = {
-        headers: {
-          'Content-Disposition': 'attachment; filename=Report.xlsx'
-        }
-      };
+      // --------- SEND EXCEL RESPONSE ---------
+      // Ref: http://www.ihamvic.com/2018/07/25/create-and-download-excel-file-in-node-js/
 
-      res.sendFile(tempFilePath, resOptions, function(err) {
-        deleteTempFile(tempFilePath);
+      var tempFilePath = tempfile('.xlsx');
 
-        if (err) {
-          return next(err);
-        }
+      workbook.xlsx.writeFile(tempFilePath).then(function() {
+        var resOptions = {
+          headers: {
+            'Content-Disposition': 'attachment; filename=Report.xlsx'
+          }
+        };
+
+        res.sendFile(tempFilePath, resOptions, function(err) {
+          deleteTempFile(tempFilePath);
+
+          if (err) {
+            return next(err);
+          }
+        });
       });
     });
   });
