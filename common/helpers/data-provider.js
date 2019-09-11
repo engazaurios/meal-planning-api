@@ -17,9 +17,9 @@ const getData = (models, startDate, endDate, costCenters, users) => {
   }).then(userMenus => {
     // Filter the included relation
     return userMenus.filter(userMenu => {
-      // if (!userMenu.user() || !userMenu.user().costCenter()) {
-      //   return false;
-      // }
+      if (!userMenu.user() || !userMenu.user().costCenter()) {
+        return false;
+      }
 
       if (costCenters && !costCenters.includes(userMenu.user().costCenterId.toString())) {
         return false;
