@@ -8,7 +8,6 @@ module.exports = function(AppUser) {
     if (ctx.instance) {
       if (ctx.isNewInstance) {
         var RoleMapping = AppUser.app.models.RoleMapping;
-        console.log(ctx.instance);
         RoleMapping.create({
           principalType: 'USER',
           principalId: ctx.instance.id,
@@ -17,7 +16,6 @@ module.exports = function(AppUser) {
           if (err) {
             return console.log(err);
           }
-          console.log(roleMapping);
         });
       }
     }
@@ -38,6 +36,31 @@ module.exports = function(AppUser) {
   AppUser.validatesUniquenessOf('email', {
     message: 'Email already exists',
   });
+
+  AppUser.loginWithToken = (token, callback) => {
+    const AccessToken = AppUser.app.models.AccessToken;
+    AccessToken.resolve(token, (error, accessToken) => {
+      if (error || !accessToken) {
+        callback('Invalid token');
+        return;
+      }
+
+      AppUser.findOne({id: accessToken.userId})
+      .then(user => {
+        const response = {
+          id: accessToken.id,
+          ttl: accessToken.ttl,
+          created: accessToken.created,
+          userId: accessToken.userId,
+          user: user
+        }
+        callback(null, response);
+      }).catch(error => {
+        callback(error);
+      });
+
+    });
+  };
 
   AppUser.createDefaultUsers = function() {
     var Role = AppUser.app.models.Role;
@@ -103,7 +126,6 @@ module.exports = function(AppUser) {
           }, function(err, role) {
             if (err) throw err;
     
-            //make bob an admin
             role.principals.create({
               principalType: RoleMapping.USER,
               principalId: users[2].id,
@@ -129,5 +151,27 @@ module.exports = function(AppUser) {
       'read',
       'write',
     ], 
+  });
+
+  AppUser.remoteMethod('loginWithToken', {
+    http: {
+      path: '/LoginWithToken',
+      verb: 'post',
+    },
+    accepts: [
+      {
+        arg: 'token',
+        type: 'String',
+        required: true,
+        description: 'The token to log in',
+        http: {
+          source: 'form',
+        },
+      },
+    ],
+    returns: {
+      type: 'object',
+      root: true,
+    },
   });
 };

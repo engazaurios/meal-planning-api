@@ -41,8 +41,14 @@ const getWholeWeek = (startDate) => {
   return dates;
 };
 
+
+const getCurrentMeal = () => {
+  return 'breakfast';
+}
+
 module.exports = {
   getDates,
   getDateWithoutTime,
   getWholeWeek,
+  getCurrentMeal,
 };

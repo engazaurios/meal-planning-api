@@ -24,9 +24,10 @@ module.exports = function(UserMenu) {
     })).then(function(dates) {
       return Promise.all(dates.map(function(date) {
         return DayMenu.findOne({
-          where: {
-            date: date.dateId,
-          },
+          where: {and: [
+            {date: date.dateId},
+            {status: 'APPROVED'},
+          ]},
         })
         .then(function(dayMenu) {
           date.dayMenu = dayMenu;
@@ -63,11 +64,14 @@ module.exports = function(UserMenu) {
     }).then(userMenu => {
       const operations = menusId.map(menuId => {
         return new Promise((resolve, reject) => {
-          userMenu.menus.add(menuId, err=> {
-            if (err) {
-              return reject(err);
-            }
-            resolve(menuId);
+          userMenu.menus.destroyAll(err => {
+            if (err) return reject(err);
+            userMenu.menus.add(menuId, err=> {
+              if (err) {
+                return reject(err);
+              }
+              resolve(menuId);
+            });
           });
         });
       });
