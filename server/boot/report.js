@@ -5,7 +5,7 @@ var fs = require('fs');
 var moment = require('moment');
 
 var excelUtils = require('../../common/utils/excel-utils');
-var dataProvider = require('../../common/helpers/data-provider.js');
+var dataProvider = require('../../common/helpers/data-provider');
 
 module.exports = function(app) {
   function deleteTempFile(file) {
@@ -30,7 +30,14 @@ module.exports = function(app) {
     var reportType = ['UNIFIED', 'TABS', 'RAW_DATA'].includes(req.query.reportType)
       ? req.query.reportType
       : 'UNIFIED';
+    
+    var constCenters = Array.isArray(req.query.costCenters)
+      ? req.query.costCenters 
+      : [req.query.costCenters];
 
+    var users = Array.isArray(req.query.users)
+      ? req.query.users
+      : [req.query.users];
 
     function printReportHeader(sheet, dates, lunchTime) {
       lunchTime = ['breakfast', 'lunch', 'dinner'].includes(lunchTime) ? lunchTime : null;
@@ -520,8 +527,8 @@ module.exports = function(app) {
       app.models,
       from,
       to,
-      req.query.costCenters,
-      req.query.users
+      costCenters,
+      users
     ).then((data) => {
       const parsedData = parseData(data);
       const workbook = createReportWithData(parsedData, reportType);
