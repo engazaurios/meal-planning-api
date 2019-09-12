@@ -30,9 +30,9 @@ module.exports = function(app) {
     var reportType = ['UNIFIED', 'TABS', 'RAW_DATA'].includes(req.query.reportType)
       ? req.query.reportType
       : 'UNIFIED';
-    
-    var constCenters = Array.isArray(req.query.costCenters)
-      ? req.query.costCenters 
+
+    var costCenters = Array.isArray(req.query.costCenters)
+      ? req.query.costCenters
       : [req.query.costCenters];
 
     var users = Array.isArray(req.query.users)

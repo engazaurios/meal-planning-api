@@ -5,13 +5,16 @@ const getData = (models, startDate, endDate, costCenters, users) => {
   const UserMenu = models.UserMenu;
   const AppUser = models.AppUser;
 
+  users = (users || []).filter(el => el != null);
+  costCenters = (costCenters || []).filter(el => el != null);
+
   return UserMenu.find({
     include: 'user',
     where: {
       and: [
         { date: { gte: startDate }},
         { date: { lte: endDate }},
-        { userId: (users) ? { inq: users } : { nin: [] }}
+        { userId: (users.length) ? { inq: users } : { nin: [] }}
       ]
     },
   }).then(userMenus => {
@@ -21,7 +24,7 @@ const getData = (models, startDate, endDate, costCenters, users) => {
         return false;
       }
 
-      if (costCenters && !costCenters.includes(userMenu.user().costCenterId.toString())) {
+      if (costCenters.length && !costCenters.includes(userMenu.user().costCenterId.toString())) {
         return false;
       }
 
