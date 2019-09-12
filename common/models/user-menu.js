@@ -24,9 +24,10 @@ module.exports = function(UserMenu) {
     })).then(function(dates) {
       return Promise.all(dates.map(function(date) {
         return DayMenu.findOne({
-          where: {
-            date: date.dateId,
-          },
+          where: {and: [
+            {date: date.dateId},
+            {status: 'APPROVED'},
+          ]},
         })
         .then(function(dayMenu) {
           date.dayMenu = dayMenu;
