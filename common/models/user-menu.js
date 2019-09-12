@@ -63,11 +63,14 @@ module.exports = function(UserMenu) {
     }).then(userMenu => {
       const operations = menusId.map(menuId => {
         return new Promise((resolve, reject) => {
-          userMenu.menus.add(menuId, err=> {
-            if (err) {
-              return reject(err);
-            }
-            resolve(menuId);
+          userMenu.menus.destroyAll(err => {
+            if (err) reject(err);
+            userMenu.menus.add(menuId, err=> {
+              if (err) {
+                return reject(err);
+              }
+              resolve(menuId);
+            });
           });
         });
       });
