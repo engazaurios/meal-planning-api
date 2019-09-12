@@ -64,7 +64,7 @@ module.exports = function(UserMenu) {
       const operations = menusId.map(menuId => {
         return new Promise((resolve, reject) => {
           userMenu.menus.destroyAll(err => {
-            if (err) reject(err);
+            if (err) return reject(err);
             userMenu.menus.add(menuId, err=> {
               if (err) {
                 return reject(err);
