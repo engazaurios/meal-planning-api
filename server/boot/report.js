@@ -163,6 +163,12 @@ module.exports = function(app) {
       var userDayMeals;
       var multiplier = lunchTime ? 3 : 9;
       var startRow = lunchTime ? 3 : 4;
+      var statusMap = {
+        PENDING: 'Pendiente',
+        SENT: 'Enviado',
+        APPROVED: 'Aprovado',
+        NOT_AVAILABLE: 'No disponible',
+      };
 
       // --------- PRINT DATA ---------
       data.forEach(function(userData, index) {
@@ -188,7 +194,7 @@ module.exports = function(app) {
           if (!lunchTime || (lunchTime === 'breakfast')) {
             if (userDayMeals.breakfast) {
               row.getCell(col++).value = userDayMeals.breakfast.menu;
-              row.getCell(col++).value = userDayMeals.breakfast.status;
+              row.getCell(col++).value = statusMap[userDayMeals.breakfast.status];
               row.getCell(col++).value = userDayMeals.breakfast.cost;
             } else {
               col += 3;
@@ -199,7 +205,7 @@ module.exports = function(app) {
           if (!lunchTime || (lunchTime === 'lunch')) {
             if (userDayMeals.lunch) {
               row.getCell(col++).value = userDayMeals.lunch.menu;
-              row.getCell(col++).value = userDayMeals.lunch.status;
+              row.getCell(col++).value = statusMap[userDayMeals.lunch.status];
               row.getCell(col++).value = userDayMeals.lunch.cost;
             } else {
               col += 3;
@@ -210,7 +216,7 @@ module.exports = function(app) {
           if (!lunchTime || (lunchTime === 'dinner')) {
             if (userDayMeals.dinner) {
               row.getCell(col++).value = userDayMeals.dinner.menu;
-              row.getCell(col++).value = userDayMeals.dinner.status;
+              row.getCell(col++).value = statusMap[userDayMeals.dinner.status];
               row.getCell(col++).value = userDayMeals.dinner.cost;
             } else {
               col += 3;
@@ -334,6 +340,13 @@ module.exports = function(app) {
         dinner: 'Cena',
       };
 
+      var statusMap = {
+        PENDING: 'Pendiente',
+        SENT: 'Enviado',
+        APPROVED: 'Aprovado',
+        NOT_AVAILABLE: 'No disponible',
+      };
+
       line = 2;
       data.forEach(function(userData) {
         username = [userData.user.name, userData.user.lastName].join(' ');
@@ -364,7 +377,7 @@ module.exports = function(app) {
             cell.value = userDayMeals[mealTime].menu;
 
             cell = row.getCell(col++);
-            cell.value = userDayMeals[mealTime].status;
+            cell.value = statusMap[userDayMeals[mealTime].status];
 
             cell = row.getCell(col++);
             cell.value = userDayMeals[mealTime].cost;
