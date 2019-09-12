@@ -125,17 +125,30 @@ module.exports = function(UserMenu) {
     }
     const dates = getWholeWeek(startDate).map(date => date.dateId);
 
-    UserMenu.updateAll({
-      and: [
-        { userId: userId },
-        { date: { inq: dates } },
-      ]
-    },
-    {
-      status: 'APPROVED'
-    }).then(info => {
-      console.log(info);
-      callback(null, info);
+    UserMenu.find({
+      where: {
+        and: [
+          { userId: userId },
+          { date: { inq: dates } },
+        ]
+      }
+    }).then(userMenus => {
+      return userMenus.filter(userMenu => {
+        return userMenu.menus().length;
+      });
+    }).then(userMenus => {
+      return Promise.all(userMenus.map(userMenu => {
+        return new Promise((resolve, reject) => {
+          userMenu.updateAttributes({
+            status: 'APPROVED'
+          }, (error, userMenuUpdated) => {
+            if (error) reject(error);
+            resolve(userMenuUpdated);
+          });
+        });
+      }));
+    }).then(result => {
+      callback(null, result);
     });
   }
 
