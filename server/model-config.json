@@ -64,8 +64,8 @@
     "dataSource": "db",
     "public": true
   },
-  "DateModel": {
-    "dataSource": "db",
+  "Attachment": {
+    "dataSource": "storage",
     "public": true
   }
 }
