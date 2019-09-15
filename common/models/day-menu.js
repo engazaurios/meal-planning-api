@@ -31,9 +31,7 @@ module.exports = function(DayMenu) {
       return;
     }
     const dates = getWholeWeek(startDate);
-    console.log('dates:', dates);
     AppUser.find({}).then(users => {
-      console.log('users: ', users);
       var list = users.reduce((accumulator, user) => {
         var creations = dates.reduce((accumulator, date) => {
           if (date.weekend) {
@@ -48,7 +46,6 @@ module.exports = function(DayMenu) {
         }, []);
         return accumulator.concat(creations);
       }, []);
-      console.log('UserMenus: ', list);
       Promise.all(list).then(result => {
         return DayMenu.updateAll({
           date: { inq: dates.map(date => date.dateId) }
@@ -56,7 +53,6 @@ module.exports = function(DayMenu) {
           status: 'APPROVED'
         });
       }).then(result => {
-        console.log('result:', result);
         callback(null, result);
       });
     });
