@@ -16,12 +16,12 @@
     "menu": {
       "type": "belongsTo",
       "model": "Menu",
-      "foreignKey": "menuId"
+      "foreignKey": ""
     },
     "userMenu": {
       "type": "belongsTo",
       "model": "UserMenu",
-      "foreignKey": "userMenuId"
+      "foreignKey": ""
     }
   },
   "acls": [],

@@ -37,7 +37,7 @@ module.exports = function(DayMenu) {
           if (date.weekend) {
             return accumulator;
           }
-          var creation = UserMenu.create({
+          var creation = UserMenu.findOrCreate({
             userId: user.id,
             status: 'PENDING',
             date: date.dateId,

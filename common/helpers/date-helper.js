@@ -42,8 +42,17 @@ const getWholeWeek = (startDate) => {
 };
 
 
-const getCurrentMeal = () => {
-  return 'breakfast';
+const getCurrentMeal = (Meal, hour, minute) => {
+  const time = hour*60 + minute;
+
+  return Meal.findOne({
+    where : {
+      and: [
+        {startTime: {lte: time}},
+        {endTime: {gt: time}}
+      ]
+    }
+  });
 }
 
 module.exports = {
