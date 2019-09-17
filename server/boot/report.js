@@ -322,6 +322,7 @@ module.exports = function(app) {
         { header: 'Tiempo', width: 15 },
         { header: 'Menu', width: 20 },
         { header: 'Estado', width: 15 },
+        { header: 'Recibido', width: 15 },
         { header: 'Valor', width: 15 },
       ];
 
@@ -378,6 +379,9 @@ module.exports = function(app) {
 
             cell = row.getCell(col++);
             cell.value = statusMap[userDayMeals[mealTime].status];
+
+            cell = row.getCell(col++);
+            cell.value = userDayMeals[mealTime].attendance ? 'Sí' : 'No';
 
             cell = row.getCell(col++);
             cell.value = userDayMeals[mealTime].cost;
@@ -505,6 +509,7 @@ module.exports = function(app) {
               menu: menu.title,
               cost: menu.price,
               status: userMenu.status,
+              attendance: menu.order() && (menu.order().attendance === true),
             };
           }
         });
@@ -519,17 +524,17 @@ module.exports = function(app) {
         }
       });
 
-      Object.values(parsedData).forEach(function(userData) {
-        console.log('------------------------');
-        console.log('User:\n', userData.user);
-        Object.values(userData.meals).forEach(function(userDayMeal) {
-          console.log('-----------');
-          console.log('Date:', userDayMeal.date);
-          console.log('Breakfast:', userDayMeal.breakfast);
-          console.log('Lunch:', userDayMeal.lunch);
-          console.log('Dinner:', userDayMeal.dinner);
-        });
-      });
+      // Object.values(parsedData).forEach(function(userData) {
+      //   console.log('------------------------');
+      //   console.log('User:\n', userData.user);
+      //   Object.values(userData.meals).forEach(function(userDayMeal) {
+      //     console.log('-----------');
+      //     console.log('Date:', userDayMeal.date);
+      //     console.log('Breakfast:', userDayMeal.breakfast);
+      //     console.log('Lunch:', userDayMeal.lunch);
+      //     console.log('Dinner:', userDayMeal.dinner);
+      //   });
+      // });
 
       return parsedData;
     }
