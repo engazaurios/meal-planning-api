@@ -35,7 +35,7 @@ const getData = (models, startDate, endDate, costCenters, users) => {
               }
             }, (err, order) => {
               // Add 'order' attibute like loopback does (as a function).
-              menu.order = order ? (() => order) : null;
+              menu.order = () => (order ? order : null);
 
               cb2(err ? err : null);
             });
