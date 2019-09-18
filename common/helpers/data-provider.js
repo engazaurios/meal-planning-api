@@ -20,51 +20,50 @@ const getData = (models, startDate, endDate, costCenters, users) => {
       ]
     },
   })
-  // This horrible code is to add the 'order' attibute to each menu.
-  .then(userMenus => new Promise((resolve, reject) => {
-    async.each(
-      userMenus,
-      (userMenu, cb1) => {
-        async.each(
-          userMenu.menus(),
-          (menu, cb2) => {
-            Order.findOne({
-              where: {
-                menuId: menu.id,
-                userMenuId: userMenu.id
-              }
-            }, (err, order) => {
-              // Add 'order' attibute like loopback does (as a function).
-              menu.order = () => (order ? order : null);
-
-              cb2(err ? err : null);
-            });
-          },
-          (err) => cb1(err ? err : null)
-        );
-      },
-      (err) => {
-        if (err) {
-          return reject(errr);
+  .then(userMenus => {
+    return new Promise((resolve, reject) => {
+      // Filter by cost center.
+      const filteredResult = userMenus.filter(userMenu => {
+        if (!userMenu.user() || !userMenu.user().costCenter()) {
+          return false;
         }
 
-        return resolve(userMenus);
-      }
-    );
-  }))
-  .then(userMenus => {
-    // Filter the included relation
-    return userMenus.filter(userMenu => {
-      if (!userMenu.user() || !userMenu.user().costCenter()) {
-        return false;
-      }
+        if (costCenters.length && !costCenters.includes(userMenu.user().costCenterId.toString())) {
+          return false;
+        }
 
-      if (costCenters.length && !costCenters.includes(userMenu.user().costCenterId.toString())) {
-        return false;
-      }
+        return true;
+      });
 
-      return true;
-    });
+      const userMenusTuples = filteredResult.reduce((carry, userMenu) => {
+        userMenu.menus().forEach((menu) => {
+          carry.push({ userMenuId: userMenu.id, menuId: menu.id });
+        });
+
+        return carry;
+      }, []);
+
+      // Find orders related to user menus.
+      async.map(
+        userMenusTuples,
+        (tuple, callback) => Order.findOne({
+          where: {
+            menuId: tuple.menuId,
+            userMenuId: tuple.userMenuId
+          }
+        }, callback),
+        (err, relatedOrders) => {
+          if (err) {
+            return reject(errr);
+          }
+
+          return resolve({
+            userMenus: filteredResult,
+            orders: relatedOrders
+          });
+        }
+      );
+    })
   });
 }
 

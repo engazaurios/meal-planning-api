@@ -166,7 +166,7 @@ module.exports = function(app) {
       var statusMap = {
         PENDING: 'Pendiente',
         SENT: 'Enviado',
-        APPROVED: 'Aprovado',
+        APPROVED: 'Aprobado',
         NOT_AVAILABLE: 'No disponible',
       };
 
@@ -322,7 +322,7 @@ module.exports = function(app) {
         { header: 'Tiempo', width: 15 },
         { header: 'Menu', width: 20 },
         { header: 'Estado', width: 15 },
-        { header: 'Recibido', width: 15 },
+        { header: 'Asistencia', width: 15 },
         { header: 'Valor', width: 15 },
       ];
 
@@ -344,7 +344,7 @@ module.exports = function(app) {
       var statusMap = {
         PENDING: 'Pendiente',
         SENT: 'Enviado',
-        APPROVED: 'Aprovado',
+        APPROVED: 'Aprobado',
         NOT_AVAILABLE: 'No disponible',
       };
 
@@ -472,10 +472,10 @@ module.exports = function(app) {
       return workbook;
     }
 
-    function parseData(rawData) {
+    function parseData({ userMenus, orders }) {
       let parsedData = {};
 
-      rawData.forEach(function(userMenu) {
+      userMenus.forEach(function(userMenu) {
         if (!parsedData[userMenu.userId]) {
           let user = userMenu.user();
 
@@ -505,11 +505,16 @@ module.exports = function(app) {
 
         userMenu.menus().forEach(function(menu) {
           if (['breakfast', 'lunch', 'dinner'].includes(menu.meal().code)) {
+            const menuOrder = orders.find((order) => (
+              (order.menuId.toString() === menu.id.toString()) &&
+              (order.userMenuId.toString() === userMenu.id.toString())
+            ));
+
             parsedData[userMenu.userId].meals[dateKey][menu.meal().code] = {
               menu: menu.title,
               cost: menu.price,
               status: userMenu.status,
-              attendance: menu.order() && (menu.order().attendance === true),
+              attendance: menuOrder && (menuOrder.attendance === true),
             };
           }
         });
@@ -523,18 +528,6 @@ module.exports = function(app) {
           delete parsedData[userMenu.userId].meals[dateKey];
         }
       });
-
-      // Object.values(parsedData).forEach(function(userData) {
-      //   console.log('------------------------');
-      //   console.log('User:\n', userData.user);
-      //   Object.values(userData.meals).forEach(function(userDayMeal) {
-      //     console.log('-----------');
-      //     console.log('Date:', userDayMeal.date);
-      //     console.log('Breakfast:', userDayMeal.breakfast);
-      //     console.log('Lunch:', userDayMeal.lunch);
-      //     console.log('Dinner:', userDayMeal.dinner);
-      //   });
-      // });
 
       return parsedData;
     }
