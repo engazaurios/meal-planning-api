@@ -24,9 +24,10 @@ module.exports = function(UserMenu) {
     })).then(function(dates) {
       return Promise.all(dates.map(function(date) {
         return DayMenu.findOne({
-          where: {
-            date: date.dateId,
-          },
+          where: {and: [
+            {date: date.dateId},
+            {status: 'APPROVED'},
+          ]},
         })
         .then(function(dayMenu) {
           date.dayMenu = dayMenu;
@@ -63,11 +64,14 @@ module.exports = function(UserMenu) {
     }).then(userMenu => {
       const operations = menusId.map(menuId => {
         return new Promise((resolve, reject) => {
-          userMenu.menus.add(menuId, err=> {
-            if (err) {
-              return reject(err);
-            }
-            resolve(menuId);
+          userMenu.menus.destroyAll(err => {
+            if (err) return reject(err);
+            userMenu.menus.add(menuId, err=> {
+              if (err) {
+                return reject(err);
+              }
+              resolve(menuId);
+            });
           });
         });
       });
@@ -121,17 +125,30 @@ module.exports = function(UserMenu) {
     }
     const dates = getWholeWeek(startDate).map(date => date.dateId);
 
-    UserMenu.updateAll({
-      and: [
-        { userId: userId },
-        { date: { inq: dates } },
-      ]
-    },
-    {
-      status: 'APPROVED'
-    }).then(info => {
-      console.log(info);
-      callback(null, info);
+    UserMenu.find({
+      where: {
+        and: [
+          { userId: userId },
+          { date: { inq: dates } },
+        ]
+      }
+    }).then(userMenus => {
+      return userMenus.filter(userMenu => {
+        return userMenu.menus().length;
+      });
+    }).then(userMenus => {
+      return Promise.all(userMenus.map(userMenu => {
+        return new Promise((resolve, reject) => {
+          userMenu.updateAttributes({
+            status: 'APPROVED'
+          }, (error, userMenuUpdated) => {
+            if (error) reject(error);
+            resolve(userMenuUpdated);
+          });
+        });
+      }));
+    }).then(result => {
+      callback(null, result);
     });
   }
 

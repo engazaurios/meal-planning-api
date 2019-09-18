@@ -20,6 +20,7 @@ const getDayInfo = (day) => {
     'weekend': (day.getDay() == 0 || day.getDay() == 6),
   };
 };
+
 const getDates = (startDate, endDate) => {
   var currentDate = startDate;
   var dates = [];
@@ -40,8 +41,23 @@ const getWholeWeek = (startDate) => {
   return dates;
 };
 
+
+const getCurrentMeal = (Meal, hour, minute) => {
+  const time = hour*60 + minute;
+
+  return Meal.findOne({
+    where : {
+      and: [
+        {startTime: {lte: time}},
+        {endTime: {gt: time}}
+      ]
+    }
+  });
+}
+
 module.exports = {
   getDates,
   getDateWithoutTime,
   getWholeWeek,
+  getCurrentMeal,
 };
