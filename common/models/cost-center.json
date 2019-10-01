@@ -10,9 +10,21 @@
       "type": "string",
       "required": true
     },
+    "code": {
+      "type": "string",
+      "required": true,
+      "index": {
+        "unique": true
+      }
+    },
     "name": {
       "type": "string",
       "required": true
+    },
+    "discountPercent": {
+      "type": "number",
+      "required": true,
+      "default": 0
     }
   },
   "validations": [],

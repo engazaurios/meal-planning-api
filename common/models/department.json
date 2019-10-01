@@ -11,6 +11,13 @@
       "type": "number",
       "required": true
     },
+    "code": {
+      "type": "string",
+      "required": true,
+      "index": {
+        "unique": true
+      }
+    },
     "name": {
       "type": "string",
       "required": true
