@@ -1,11 +1,12 @@
-var createError = require('http-errors');
-var excel = require('exceljs');
-var tempfile = require('tempfile');
-var fs = require('fs');
-var moment = require('moment');
+const createError = require('http-errors');
+const excel = require('exceljs');
+const tempfile = require('tempfile');
+const fs = require('fs');
+const moment = require('moment');
 
-var excelUtils = require('../../common/utils/excel-utils');
-var dataProvider = require('../../common/helpers/data-provider');
+const constants = require('../../common/constants/constants');
+const excelUtils = require('../../common/utils/excel-utils');
+const dataProvider = require('../../common/helpers/data-provider');
 
 module.exports = function(app) {
   function deleteTempFile(file) {
@@ -27,6 +28,7 @@ module.exports = function(app) {
 
     var from = new Date(req.query.from);
     var to = new Date(req.query.to);
+
     var reportType = ['UNIFIED', 'TABS', 'RAW_DATA'].includes(req.query.reportType)
       ? req.query.reportType
       : 'UNIFIED';
@@ -39,12 +41,79 @@ module.exports = function(app) {
       ? req.query.users
       : [req.query.users];
 
-    function printReportHeader(sheet, dates, lunchTime) {
-      lunchTime = ['breakfast', 'lunch', 'dinner'].includes(lunchTime) ? lunchTime : null;
+
+    function parseData({ userMenus, orders }) {
+      let parsedData = {};
+
+      userMenus.forEach(function(userMenu) {
+        const user = userMenu.user();
+        const costCenter = user.costCenter();
+        const discountPercent = (costCenter && costCenter.discountPercent) || 0;
+
+        if (!parsedData[userMenu.userId]) {
+          parsedData[userMenu.userId] = {
+            user: {
+              id: userMenu.userId,
+              name: user.name,
+              lastName: user.lastName,
+              costCenter: {
+                name: costCenter ? costCenter.name : ''
+              },
+              role: {
+                name: user.roles().length ? user.roles()[0].name : ''
+              }
+            },
+            meals: {},
+          };
+        }
+
+        const dateKey = moment(userMenu.date).format('YYYY-MM-DD');
+
+        if (!parsedData[userMenu.userId].meals[dateKey]) {
+          parsedData[userMenu.userId].meals[dateKey] = {
+            date: dateKey
+          };
+        }
+
+        userMenu.menus().forEach(function(menu) {
+          if (['breakfast', 'lunch', 'dinner'].includes(menu.meal().code)) {
+            const mealTime = menu.meal().code;
+            const mealPercentCost = (1 - (discountPercent / 100));
+            const mealCost = constants.MEALS_DEFAULT_PRICES[mealTime] * mealPercentCost;
+
+            const menuOrder = orders.find((order) => (
+              (order.menuId.toString() === menu.id.toString()) &&
+              (order.userMenuId.toString() === userMenu.id.toString())
+            ));
+
+            parsedData[userMenu.userId].meals[dateKey][mealTime] = {
+              menu: menu.title,
+              cost: parseFloat(mealCost.toFixed(2)),
+              status: userMenu.status,
+              attendance: menuOrder && (menuOrder.attendance === true),
+            };
+          }
+        });
+
+        // If user has no meals for current date, refuse the date from data.
+        if (
+          !parsedData[userMenu.userId].meals[dateKey].breakfast
+          && !parsedData[userMenu.userId].meals[dateKey].lunch
+          && !parsedData[userMenu.userId].meals[dateKey].dinner
+        ) {
+          delete parsedData[userMenu.userId].meals[dateKey];
+        }
+      });
+
+      return parsedData;
+    }
+
+    function printReportHeader(sheet, dates, mealTime) {
+      mealTime = ['breakfast', 'lunch', 'dinner'].includes(mealTime) ? mealTime : null;
 
       sheet.addRow(['Empleado', 'Centro de costo']);
-      sheet.mergeCells(1, 1, lunchTime ? 2 : 3, 1);
-      sheet.mergeCells(1, 2, lunchTime ? 2 : 3, 2);
+      sheet.mergeCells(1, 1, mealTime ? 2 : 3, 1);
+      sheet.mergeCells(1, 2, mealTime ? 2 : 3, 2);
 
       excelUtils.applyVerticalAligmentMiddleToCell(sheet.getCell('A1'));
       excelUtils.applyVerticalAligmentMiddleToCell(sheet.getCell('B1'));
@@ -76,18 +145,18 @@ module.exports = function(app) {
         excelUtils.applyBoldToCell(cell);
         excelUtils.applyAllBordersToCell(cell);
 
-        sheet.mergeCells(1, col, 1, lunchTime ? col + 2 : col + 8);
+        sheet.mergeCells(1, col, 1, mealTime ? col + 2 : col + 8);
 
-        col += lunchTime ? 3 : 9;
+        col += mealTime ? 3 : 9;
       });
 
       // --------- PRINT LUCNH TIMES ---------
-      if (!lunchTime) {
-        var lunchTimesRow = sheet.getRow(2);
+      if (!mealTime) {
+        var mealTimesRow = sheet.getRow(2);
 
         col = 3;
         dates.forEach(function(date) {
-          cell = lunchTimesRow.getCell(col);
+          cell = mealTimesRow.getCell(col);
 
           cell.value = 'Desayuno';
           excelUtils.applyHorizontalAligmentCenterToCell(cell);
@@ -97,7 +166,7 @@ module.exports = function(app) {
           sheet.mergeCells(2, col, 2, col + 2);
           col += 3;
 
-          cell = lunchTimesRow.getCell(col);
+          cell = mealTimesRow.getCell(col);
 
           cell.value = 'Almuerzo';
           excelUtils.applyHorizontalAligmentCenterToCell(cell);
@@ -107,7 +176,7 @@ module.exports = function(app) {
           sheet.mergeCells(2, col, 2, col + 2);
           col += 3;
 
-          cell = lunchTimesRow.getCell(col);
+          cell = mealTimesRow.getCell(col);
 
           cell.value = 'Cena';
           excelUtils.applyHorizontalAligmentCenterToCell(cell);
@@ -120,11 +189,11 @@ module.exports = function(app) {
       }
 
       // --------- PRINT MENUS ---------
-      var menusRow = sheet.getRow(lunchTime ? 2 : 3);
+      var menusRow = sheet.getRow(mealTime ? 2 : 3);
 
       col = 3;
       dates.forEach(function(date) {
-        for (var i = 0; i < (lunchTime ? 1 : 3); i++) {
+        for (var i = 0; i < (mealTime ? 1 : 3); i++) {
           cell = menusRow.getCell(col);
           cell.value = 'Menu';
           excelUtils.applyHorizontalAligmentCenterToCell(cell);
@@ -153,16 +222,16 @@ module.exports = function(app) {
       });
     }
 
-    function printReportData(sheet, data, dates, lunchTime) {
+    function printReportData(sheet, data, dates, mealTime) {
       data = Array.isArray(data) && data.length ? data : [];
       dates = Array.isArray(dates) && dates.length ? dates : [];
-      lunchTime = ['breakfast', 'lunch', 'dinner'].includes(lunchTime) ? lunchTime : null;
+      mealTime = ['breakfast', 'lunch', 'dinner'].includes(mealTime) ? mealTime : null;
 
       var col;
       var row, cell;
       var userDayMeals;
-      var multiplier = lunchTime ? 3 : 9;
-      var startRow = lunchTime ? 3 : 4;
+      var multiplier = mealTime ? 3 : 9;
+      var startRow = mealTime ? 3 : 4;
       var statusMap = {
         PENDING: 'Pendiente',
         SENT: 'Enviado',
@@ -191,7 +260,7 @@ module.exports = function(app) {
           }
 
           // Breakfast
-          if (!lunchTime || (lunchTime === 'breakfast')) {
+          if (!mealTime || (mealTime === 'breakfast')) {
             if (userDayMeals.breakfast) {
               row.getCell(col++).value = userDayMeals.breakfast.menu;
               row.getCell(col++).value = statusMap[userDayMeals.breakfast.status];
@@ -202,7 +271,7 @@ module.exports = function(app) {
           }
 
           // Lunch
-          if (!lunchTime || (lunchTime === 'lunch')) {
+          if (!mealTime || (mealTime === 'lunch')) {
             if (userDayMeals.lunch) {
               row.getCell(col++).value = userDayMeals.lunch.menu;
               row.getCell(col++).value = statusMap[userDayMeals.lunch.status];
@@ -213,7 +282,7 @@ module.exports = function(app) {
           }
 
           // Lunch
-          if (!lunchTime || (lunchTime === 'dinner')) {
+          if (!mealTime || (mealTime === 'dinner')) {
             if (userDayMeals.dinner) {
               row.getCell(col++).value = userDayMeals.dinner.menu;
               row.getCell(col++).value = statusMap[userDayMeals.dinner.status];
@@ -228,7 +297,7 @@ module.exports = function(app) {
       // --------- PRINT TOTALS ---------
       var breakfastTotal, lunchTotal, dinnerTotal;
       var grandTotal = 0;
-      var lastRow = (lunchTime ? 4 : 5) + data.length;
+      var lastRow = (mealTime ? 4 : 5) + data.length;
 
       totalsRow = sheet.getRow(lastRow);
 
@@ -238,7 +307,7 @@ module.exports = function(app) {
       col = 5;
       dates.forEach(function(date) {
         // Breakfast total
-        if (!lunchTime || (lunchTime === 'breakfast')) {
+        if (!mealTime || (mealTime === 'breakfast')) {
           breakfastTotal = data.reduce(function(sum, userData) {
             userDayMeals = userData.meals[date];
 
@@ -257,7 +326,7 @@ module.exports = function(app) {
         }
 
         // Lunch total
-        if (!lunchTime || (lunchTime === 'lunch')) {
+        if (!mealTime || (mealTime === 'lunch')) {
           lunchTotal = data.reduce(function(sum, userData) {
             userDayMeals = userData.meals[date];
 
@@ -276,7 +345,7 @@ module.exports = function(app) {
         }
 
         // Dinner total
-        if (!lunchTime || (lunchTime === 'dinner')) {
+        if (!mealTime || (mealTime === 'dinner')) {
           dinnerTotal = data.reduce(function(sum, userData) {
             userDayMeals = userData.meals[date];
 
@@ -470,66 +539,6 @@ module.exports = function(app) {
       }
 
       return workbook;
-    }
-
-    function parseData({ userMenus, orders }) {
-      let parsedData = {};
-
-      userMenus.forEach(function(userMenu) {
-        if (!parsedData[userMenu.userId]) {
-          let user = userMenu.user();
-
-          parsedData[userMenu.userId] = {
-            user: {
-              id: userMenu.userId,
-              name: user.name,
-              lastName: user.lastName,
-              costCenter: {
-                name: user.costCenter() ? user.costCenter().name : ''
-              },
-              role: {
-                name: user.roles().length ? user.roles()[0].name : ''
-              }
-            },
-            meals: {},
-          };
-        }
-
-        const dateKey = moment(userMenu.date).format('YYYY-MM-DD');
-
-        if (!parsedData[userMenu.userId].meals[dateKey]) {
-          parsedData[userMenu.userId].meals[dateKey] = {
-            date: dateKey
-          };
-        }
-
-        userMenu.menus().forEach(function(menu) {
-          if (['breakfast', 'lunch', 'dinner'].includes(menu.meal().code)) {
-            const menuOrder = orders.find((order) => (
-              (order.menuId.toString() === menu.id.toString()) &&
-              (order.userMenuId.toString() === userMenu.id.toString())
-            ));
-
-            parsedData[userMenu.userId].meals[dateKey][menu.meal().code] = {
-              menu: menu.title,
-              cost: menu.price,
-              status: userMenu.status,
-              attendance: menuOrder && (menuOrder.attendance === true),
-            };
-          }
-        });
-
-        // If user has no meals for current date, refuse the date from data.
-        if (
-          !parsedData[userMenu.userId].meals[dateKey].breakfast
-          && !parsedData[userMenu.userId].meals[dateKey].lunch
-          && !parsedData[userMenu.userId].meals[dateKey].dinner
-        ) {
-          delete parsedData[userMenu.userId].meals[dateKey];
-        }
-      });
-
-      return parsedData;
     }
 
 
