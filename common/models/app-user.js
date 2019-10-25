@@ -37,29 +37,38 @@ module.exports = function(AppUser) {
     message: 'Email already exists',
   });
 
-  AppUser.loginWithToken = (token, callback) => {
+  AppUser.loginWithQR = async (token) => {
     const AccessToken = AppUser.app.models.AccessToken;
-    AccessToken.resolve(token, (error, accessToken) => {
-      if (error || !accessToken) {
-        callback('Invalid token');
-        return;
+
+    const user = await AppUser.findOne({
+      where: {
+        qrCode: token
       }
-
-      AppUser.findOne({id: accessToken.userId})
-      .then(user => {
-        const response = {
-          id: accessToken.id,
-          ttl: accessToken.ttl,
-          created: accessToken.created,
-          userId: accessToken.userId,
-          user: user
-        }
-        callback(null, response);
-      }).catch(error => {
-        callback(error);
-      });
-
     });
+
+    if (!user) {
+      return {
+        status: 'ERROR',
+        message: 'Usuario invalido'
+      };
+    }
+
+    const accessToken = await new Promise((resolve, reject) => {
+      user.createAccessToken(1209600, (error, token) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(token);
+      });
+    });
+
+    return {
+      id: accessToken.id,
+      ttl: accessToken.ttl,
+      created: accessToken.created,
+      userId: accessToken.userId,
+      user: user
+    }
   };
 
   AppUser.createDefaultUsers = function() {
@@ -153,9 +162,9 @@ module.exports = function(AppUser) {
     ], 
   });
 
-  AppUser.remoteMethod('loginWithToken', {
+  AppUser.remoteMethod('loginWithQR', {
     http: {
-      path: '/LoginWithToken',
+      path: '/LoginWithQR',
       verb: 'post',
     },
     accepts: [

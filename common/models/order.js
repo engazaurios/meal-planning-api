@@ -39,8 +39,8 @@ module.exports = function(Order) {
   }
 
   Order.attendance = async (token, date, hour, minute) => {
-    const AccessToken = Order.app.models.AccessToken;
     const Meal = Order.app.models.Meal;
+    const AppUser = Order.app.models.AppUser;
 
     const today = new Date(getDateWithoutTime(date));
     try {
@@ -53,16 +53,16 @@ module.exports = function(Order) {
         };
       }
 
-      const tokenResult = await new Promise((resolve, reject) => {
-        AccessToken.resolve(token, async (error, token) => {
-          resolve(token);
-        });
-      }); 
+      const user = await AppUser.findOne({
+        where: {
+          qrCode: token
+        }
+      });
 
-      if (!tokenResult) {
+      if (!user) {
         return {
           status: 'ERROR',
-          message: 'Token invalido'
+          message: 'No se reconoce el usuario'
         };
       }
 
@@ -76,7 +76,7 @@ module.exports = function(Order) {
         && order.userMenu()
         && order.menu().meal().code == meal.code 
         && order.userMenu().date.getTime() == today.getTime()
-        && order.userMenu().userId.equals(tokenResult.userId);
+        && order.userMenu().userId.equals(user.id);
       });
 
       if (!selectedOrders.length) {
@@ -110,7 +110,7 @@ module.exports = function(Order) {
         date: today,
         meal: meal,
         updated: approvedOrders.length,
-        accessToken: tokenResult,
+        user: user,
         status: 'SUCCESS',
         message: 'Asistencia marcada correctamente'
       }
@@ -203,6 +203,27 @@ module.exports = function(Order) {
      throw error;
    }
   };
+
+  Order.generateCodes = async (quantity, size) => {
+    if (!size) size = 500;
+    const list = [];
+    const AccessToken = Order.app.models.AccessToken;
+
+    for (var i=0; i<quantity; i++) {
+      var token = await new Promise((resolve, reject) => {
+        AccessToken.createAccessTokenId(async (error, token) => {
+          if (error) reject(error);
+          resolve(token);
+        });
+      }); 
+      list.push({
+        token: token,
+        image: `https://api.qrserver.com/v1/create-qr-code/?margin=40&size=${size}x${size}&data=${token}`
+      });
+    }
+
+    return list;
+  }
 
   Order.currentMeal = (callback) => {
     const Meal = Order.app.models.Meal;
@@ -340,6 +361,29 @@ module.exports = function(Order) {
         arg: 'minute',
         type: 'number',
         required: true,
+      }
+    ],
+    returns: {
+      arg: 'result',
+      type: 'object',
+    },
+  });
+
+  Order.remoteMethod('generateCodes', {
+    http: {
+      path: '/GenerateCodes',
+      verb: 'get',
+    },
+    accepts: [
+      {
+        arg: 'quantity',
+        type: 'number',
+        required: true,
+      },
+      {
+        arg: 'size',
+        type: 'number',
+        required: false,
       }
     ],
     returns: {
