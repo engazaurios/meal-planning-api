@@ -1,5 +1,6 @@
 /* jshint node: true */
 'use strict';
+const createError = require('http-errors');
 
 module.exports = function(AppUser) {
   delete AppUser.validations.email;
@@ -47,10 +48,7 @@ module.exports = function(AppUser) {
     });
 
     if (!user) {
-      return {
-        status: 'ERROR',
-        message: 'Usuario invalido'
-      };
+      throw createError(401, 'Usuario invalido')
     }
 
     const accessToken = await new Promise((resolve, reject) => {
