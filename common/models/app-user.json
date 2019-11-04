@@ -67,7 +67,7 @@
       "permission": "ALLOW",
       "principalType": "ROLE",
       "principalId": "$everyone",
-      "property": "loginWithToken"
+      "property": "loginWithQR"
     }
   ],
   "methods": {}
