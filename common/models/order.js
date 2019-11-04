@@ -74,7 +74,7 @@ module.exports = function(Order) {
         return order.menu()
         && order.menu().meal()
         && order.userMenu()
-        && order.menu().meal().code == meal.code 
+        && order.menu().meal().code == meal.code
         && order.userMenu().date.getTime() == today.getTime()
         && order.userMenu().userId.equals(user.id);
       });
@@ -215,7 +215,7 @@ module.exports = function(Order) {
           if (error) reject(error);
           resolve(token);
         });
-      }); 
+      });
       list.push({
         token: token,
         image: `https://api.qrserver.com/v1/create-qr-code/?margin=40&size=${size}x${size}&data=${token}`
