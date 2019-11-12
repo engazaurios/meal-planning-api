@@ -56,9 +56,7 @@ module.exports = function(app) {
               id: userMenu.userId,
               name: user.name,
               lastName: user.lastName,
-              costCenter: {
-                name: costCenter ? costCenter.name : ''
-              },
+              costCenter: costCenter,
               role: {
                 name: user.roles().length ? user.roles()[0].name : ''
               }
@@ -124,8 +122,8 @@ module.exports = function(app) {
       excelUtils.applyAllBordersToCell(sheet.getCell('A1'));
       excelUtils.applyAllBordersToCell(sheet.getCell('B1'));
 
-      sheet.getColumn(1).width = 20;
-      sheet.getColumn(2).width = 15;
+      sheet.getColumn(1).width = 25;
+      sheet.getColumn(2).width = 20;
 
       if (!Array.isArray(dates) || !dates.length) {
         return;
@@ -229,7 +227,7 @@ module.exports = function(app) {
 
       var col;
       var row, cell;
-      var userDayMeals;
+      var userDayMeals, costCenter;
       var multiplier = mealTime ? 3 : 9;
       var startRow = mealTime ? 3 : 4;
       var statusMap = {
@@ -241,6 +239,8 @@ module.exports = function(app) {
 
       // --------- PRINT DATA ---------
       data.forEach(function(userData, index) {
+        costCenter =  userData.user.costCenter;
+
         row = sheet.getRow(startRow + index);
         col = 1;
 
@@ -248,7 +248,7 @@ module.exports = function(app) {
         cell.value = [userData.user.name, userData.user.lastName].join(' ');
 
         cell = row.getCell(col++);
-        cell.value = userData.user.costCenter ? userData.user.costCenter.name : '';
+        cell.value = costCenter ? [costCenter.code, costCenter.name].join(' - ') : '';
 
         dates.forEach(function(date) {
           userDayMeals = userData.meals[date];
@@ -420,7 +420,7 @@ module.exports = function(app) {
       line = 2;
       data.forEach(function(userData) {
         username = [userData.user.name, userData.user.lastName].join(' ');
-        costCenter = userData.user.costCenter ? userData.user.costCenter.name : '';
+        costCenter = userData.user.costCenter;
 
         Object.values(userData.meals).forEach(function(userDayMeals) {
           ['breakfast', 'lunch', 'dinner'].forEach(function(mealTime) {
@@ -435,7 +435,7 @@ module.exports = function(app) {
             cell.value = username;
 
             cell = row.getCell(col++);
-            cell.value = costCenter;
+            cell.value = costCenter ? [costCenter.code, costCenter.name].join(' - ') : '';
 
             cell = row.getCell(col++);
             cell.value = userDayMeals.date;
