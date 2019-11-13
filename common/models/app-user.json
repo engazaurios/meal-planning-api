@@ -24,7 +24,10 @@
     },
     "qrCode": {
       "type": "string",
-      "required": false
+      "required": false,
+      "index": {
+        "unique": true
+      }
     },
     "status": {
       "type": "string",

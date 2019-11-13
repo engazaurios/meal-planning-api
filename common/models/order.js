@@ -1,6 +1,6 @@
 'use strict';
 
-var {getDates, getWholeWeek, getDateWithoutTime, getCurrentMeal} = require('../helpers/date-helper.js');
+var { getDates, getWholeWeek, getDateWithoutTime, getCurrentMeal } = require('../helpers/date-helper.js');
 
 module.exports = function(Order) {
 
@@ -14,7 +14,10 @@ module.exports = function(Order) {
     const orders = await Order.find({
       include: ['userMenu', 'menu'],
       where: {
-        attendance: true
+        and: [
+          {attendance: true},
+          {date: date}
+        ]
       }
     });
 
@@ -67,7 +70,10 @@ module.exports = function(Order) {
       }
 
       const orders = await Order.find({
-        include: ['userMenu', 'menu']
+        include: ['userMenu', 'menu'],
+        where: {
+          date: {eq: date}
+        }
       });
 
       const selectedOrders = orders.filter(order => {
@@ -98,7 +104,8 @@ module.exports = function(Order) {
       }
 
       approvedOrders.forEach(order => {
-        order.updateAttribute('attendance', true, (err, instance) => {
+        const attendanceAt = new Date();
+        order.updateAttributes({'attendance': true, 'attendanceAt': attendanceAt}, (err, instance) => {
           if (err) throw err;
         });
       });
@@ -150,7 +157,10 @@ module.exports = function(Order) {
       }
 
       const orders = await Order.find({
-        include: ['userMenu', 'menu']
+        include: ['userMenu', 'menu'],
+        where: {
+          date: {eq: date}
+        }
       });
 
       const selectedOrders = orders.filter(order => {
