@@ -54,6 +54,7 @@ module.exports = function(UserMenu) {
   };
 
   UserMenu.saveMenus = function(userId, date, menusId, callback) {
+    const Order = UserMenu.app.models.Order;
     UserMenu.findOne({
       where: {
         and: [
@@ -66,16 +67,18 @@ module.exports = function(UserMenu) {
         return new Promise((resolve, reject) => {
           userMenu.menus.destroyAll(err => {
             if (err) return reject(err);
-            userMenu.menus.add(menuId, err=> {
-              if (err) {
-                return reject(err);
-              }
+            Order.create({
+              menuId: menuId,
+              userMenuId: userMenu.id,
+              date: userMenu.date,
+            }, (err, instance) => {
+              if (err) return reject(err);
               resolve(menuId);
             });
           });
         });
       });
-      
+
       Promise.all(operations)
       .then(result => {
         return new Promise((resolve, reject) => {
@@ -90,7 +93,6 @@ module.exports = function(UserMenu) {
             status: 'SENT'
           }, (error, userMenuUpdated) => {
             if (error) reject(error);
-            
             resolve(userMenuUpdated);
           });
         });
