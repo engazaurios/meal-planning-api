@@ -90,7 +90,7 @@ module.exports = function(app) {
               menu: menu.title,
               cost: parseFloat(mealCost.toFixed(2)),
               status: userMenu.status,
-              attendance: menuOrder && (menuOrder.attendance === true),
+              order: menuOrder,
             };
           }
         });
@@ -391,7 +391,7 @@ module.exports = function(app) {
         { header: 'Tiempo', width: 15 },
         { header: 'Menu', width: 20 },
         { header: 'Estado', width: 15 },
-        { header: 'Asistencia', width: 15 },
+        { header: 'Asistencia', width: 20 },
         { header: 'Valor', width: 15 },
       ];
 
@@ -401,7 +401,7 @@ module.exports = function(app) {
       });
 
       var row, col, line, cell;
-      var username, costCenter;
+      var username, costCenter, order, attendanceAt;
       var grandTotal = 0;
 
       var mealTimeMap = {
@@ -428,6 +428,9 @@ module.exports = function(app) {
               return;
             }
 
+            order = userDayMeals[mealTime].order;
+            attendanceAt = (order && order.attendanceAt) ? moment(order.attendanceAt) : null;
+
             row = sheet.getRow(line);
             col = 1;
 
@@ -450,7 +453,7 @@ module.exports = function(app) {
             cell.value = statusMap[userDayMeals[mealTime].status];
 
             cell = row.getCell(col++);
-            cell.value = userDayMeals[mealTime].attendance ? 'Sí' : 'No';
+            cell.value = attendanceAt ? attendanceAt.format('YYYY-MM-DD HH:mm') : null;
 
             cell = row.getCell(col++);
             cell.value = userDayMeals[mealTime].cost;
