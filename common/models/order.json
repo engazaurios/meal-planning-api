@@ -9,6 +9,12 @@
     "attendance": {
       "type": "boolean",
       "default": false
+    },
+    "attendanceAt": {
+      "type": "date"
+    },
+    "date": {
+      "type": "date"
     }
   },
   "validations": [],
