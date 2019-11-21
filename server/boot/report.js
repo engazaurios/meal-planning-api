@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const excel = require('exceljs');
+const stringify = require('csv-stringify');
 const tempfile = require('tempfile');
 const fs = require('fs');
 const moment = require('moment');
@@ -29,9 +30,9 @@ module.exports = function(app) {
     var from = new Date(req.query.from);
     var to = new Date(req.query.to);
 
-    var reportType = ['UNIFIED', 'TABS', 'RAW_DATA'].includes(req.query.reportType)
+    var reportType = ['UNIFIED', 'TABS', 'RAW_DATA', 'CSV'].includes(req.query.reportType)
       ? req.query.reportType
-      : 'UNIFIED';
+      : 'RAW_DATA';
 
     var costCenters = Array.isArray(req.query.costCenters)
       ? req.query.costCenters
@@ -84,11 +85,15 @@ module.exports = function(app) {
               (order.userMenuId.toString() === userMenu.id.toString())
             ));
 
+            const attendanceAt = (menuOrder && menuOrder.attendanceAt)
+              ? moment(menuOrder.attendanceAt).format('YYYY-MM-DD HH:mm')
+              : null;
+
             parsedData[userMenu.userId].meals[dateKey][mealTime] = {
               menu: menu.title,
               cost: parseFloat(mealCost.toFixed(2)),
               status: userMenu.status,
-              order: menuOrder,
+              attendanceAt: attendanceAt,
             };
           }
         });
@@ -104,6 +109,55 @@ module.exports = function(app) {
       });
 
       return parsedData;
+    }
+
+    function prepareRawData(arrayData) {
+      if (!Array.isArray(arrayData)) {
+        throw Error('Invalid data provided.');
+      }
+
+      var username, costCenter;
+
+      var mealTimeMap = {
+        breakfast: 'Desayuno',
+        lunch: 'Almuerzo',
+        dinner: 'Cena',
+      };
+
+      var statusMap = {
+        PENDING: 'Pendiente',
+        SENT: 'Enviado',
+        APPROVED: 'Aprobado',
+        NOT_AVAILABLE: 'No disponible',
+      };
+
+      var rawData = [];
+
+      arrayData.forEach(function(userData) {
+        username = [userData.user.name, userData.user.lastName].join(' ');
+        costCenter = userData.user.costCenter;
+
+        Object.values(userData.meals).forEach(function(userDayMeals) {
+          ['breakfast', 'lunch', 'dinner'].forEach(function(mealTime) {
+            if (!userDayMeals[mealTime]) {
+              return;
+            }
+
+            rawData.push({
+              username: username,
+              costCenter: costCenter ? [costCenter.code, costCenter.name].join(' - ') : '',
+              date: userDayMeals.date,
+              mealTime: mealTimeMap[mealTime],
+              menu: userDayMeals[mealTime].menu,
+              status: statusMap[userDayMeals[mealTime].status],
+              attendanceAt: userDayMeals[mealTime].attendanceAt,
+              cost: userDayMeals[mealTime].cost,
+            });
+          });
+         });
+      });
+
+      return rawData;
     }
 
     function printReportHeader(sheet, dates, mealTime) {
@@ -382,7 +436,9 @@ module.exports = function(app) {
     }
 
     function printReportRawData(sheet, data) {
-      data = Array.isArray(data) && data.length ? data : [];
+      if (!Array.isArray(data)) {
+        throw Error('Invalid data provided.');
+      }
 
       sheet.columns = [
         { header: 'Empleado', width: 30 },
@@ -400,69 +456,41 @@ module.exports = function(app) {
         excelUtils.applyBoldToCell(cell);
       });
 
-      var row, col, line, cell;
-      var username, costCenter, order, attendanceAt;
+      var row, col, cell;
       var grandTotal = 0;
+      var line = 2;
 
-      var mealTimeMap = {
-        breakfast: 'Desayuno',
-        lunch: 'Almuerzo',
-        dinner: 'Cena',
-      };
+      data.forEach(function(userMenuData) {
+        row = sheet.getRow(line);
+        col = 1;
 
-      var statusMap = {
-        PENDING: 'Pendiente',
-        SENT: 'Enviado',
-        APPROVED: 'Aprobado',
-        NOT_AVAILABLE: 'No disponible',
-      };
+        cell = row.getCell(col++);
+        cell.value = userMenuData.username;
 
-      line = 2;
-      data.forEach(function(userData) {
-        username = [userData.user.name, userData.user.lastName].join(' ');
-        costCenter = userData.user.costCenter;
+        cell = row.getCell(col++);
+        cell.value = userMenuData.costCenter;
 
-        Object.values(userData.meals).forEach(function(userDayMeals) {
-          ['breakfast', 'lunch', 'dinner'].forEach(function(mealTime) {
-            if (!userDayMeals[mealTime]) {
-              return;
-            }
+        cell = row.getCell(col++);
+        cell.value = userMenuData.date;
 
-            order = userDayMeals[mealTime].order;
-            attendanceAt = (order && order.attendanceAt) ? moment(order.attendanceAt) : null;
+        cell = row.getCell(col++);
+        cell.value = userMenuData.mealTime;
 
-            row = sheet.getRow(line);
-            col = 1;
+        cell = row.getCell(col++);
+        cell.value = userMenuData.menu;
 
-            cell = row.getCell(col++);
-            cell.value = username;
+        cell = row.getCell(col++);
+        cell.value = userMenuData.status;
 
-            cell = row.getCell(col++);
-            cell.value = costCenter ? [costCenter.code, costCenter.name].join(' - ') : '';
+        cell = row.getCell(col++);
+        cell.value = userMenuData.attendanceAt;
 
-            cell = row.getCell(col++);
-            cell.value = userDayMeals.date;
+        cell = row.getCell(col++);
+        cell.value = userMenuData.cost;
 
-            cell = row.getCell(col++);
-            cell.value = mealTimeMap[mealTime];
+        grandTotal += userMenuData.cost;
 
-            cell = row.getCell(col++);
-            cell.value = userDayMeals[mealTime].menu;
-
-            cell = row.getCell(col++);
-            cell.value = statusMap[userDayMeals[mealTime].status];
-
-            cell = row.getCell(col++);
-            cell.value = attendanceAt ? attendanceAt.format('YYYY-MM-DD HH:mm') : null;
-
-            cell = row.getCell(col++);
-            cell.value = userDayMeals[mealTime].cost;
-
-            grandTotal += userDayMeals[mealTime].cost;
-
-            line +=1;
-          });
-         });
+        line +=1;
       });
 
       var totalsRow = sheet.getRow(++line);
@@ -483,10 +511,13 @@ module.exports = function(app) {
       }
     }
 
-    function createReportWithData(parsedData, reportType) {
+    function createExcelReportWithData(arrayData, reportType) {
+      if (!Array.isArray(arrayData)) {
+        throw Error('Invalid data provided.');
+      }
+
       var workbook = new excel.Workbook();
       var sheet, dates;
-      var arrayData = Object.values(parsedData);
 
       dates = arrayData.reduce(function(carry, userData) {
         Object.keys(userData.meals).forEach(function(userMenuDay) {
@@ -536,14 +567,13 @@ module.exports = function(app) {
           { state: 'frozen', xSplit: 0, ySplit: 1 }
         ];
 
-        printReportRawData(sheet, arrayData);
+        printReportRawData(sheet, prepareRawData(arrayData));
       } else {
         throw Error('Invalid report type: ' + reportType);
       }
 
       return workbook;
     }
-
 
 
     var reportData = dataProvider.getData(
@@ -554,28 +584,43 @@ module.exports = function(app) {
       users
     ).then((data) => {
       const parsedData = parseData(data);
-      const workbook = createReportWithData(parsedData, reportType);
+      const arrayData = Object.values(parsedData);
 
-      // --------- SEND EXCEL RESPONSE ---------
-      // Ref: http://www.ihamvic.com/2018/07/25/create-and-download-excel-file-in-node-js/
+      try {
+        if (reportType === 'CSV') {
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader('Content-Disposition', 'attachment; filename=\"Report.csv\"');
 
-      var tempFilePath = tempfile('.xlsx');
+          const csvReportData = prepareRawData(arrayData);
 
-      workbook.xlsx.writeFile(tempFilePath).then(function() {
-        var resOptions = {
-          headers: {
-            'Content-Disposition': 'attachment; filename=Report.xlsx'
-          }
-        };
+          return stringify(csvReportData, { header: true }).pipe(res);
+        }
 
-        res.sendFile(tempFilePath, resOptions, function(err) {
-          deleteTempFile(tempFilePath);
+        const workbook = createExcelReportWithData(arrayData, reportType);
 
-          if (err) {
-            return next(err);
-          }
+        // --------- SEND EXCEL RESPONSE ---------
+        // Ref: http://www.ihamvic.com/2018/07/25/create-and-download-excel-file-in-node-js/
+
+        var tempFilePath = tempfile('.xlsx');
+
+        workbook.xlsx.writeFile(tempFilePath).then(function() {
+          var resOptions = {
+            headers: {
+              'Content-Disposition': 'attachment; filename=\"Report.xlsx\"'
+            }
+          };
+
+          res.sendFile(tempFilePath, resOptions, function(err) {
+            deleteTempFile(tempFilePath);
+
+            if (err) {
+              return next(err);
+            }
+          });
         });
-      });
+      } catch(error) {
+        next(error);
+      }
     });
   });
 }
