@@ -1,23 +1,17 @@
-# Create image based on the official Node 6 image from the dockerhub
-FROM node:6
+FROM node:10-alpine
 
-# Create a directory where our app will be placed
-RUN mkdir -p /opt/src/app
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
 
-# Change directory so that our commands run inside this new directory
-WORKDIR /opt/src/app
+WORKDIR /home/node/app
 
-# Copy dependency definitions
-COPY package.json /opt/src/app
+COPY package*.json ./
 
-# Install dependecies
+USER node
+
 RUN npm install
 
-# Get all the code needed to run the app
-COPY . /opt/src/app
+COPY --chown=node:node . .
 
-# Expose the port the app runs in
-EXPOSE 3000
+EXPOSE 8080
 
-# Serve the app
-CMD ["npm", "start"]
+CMD [ "node", "app.js" ]
