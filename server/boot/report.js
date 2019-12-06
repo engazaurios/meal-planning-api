@@ -145,7 +145,8 @@ module.exports = function(app) {
 
             rawData.push({
               username: username,
-              costCenter: costCenter ? [costCenter.code, costCenter.name].join(' - ') : '',
+              costCenter: costCenter.name,
+              costCenterCode: costCenter.code,
               date: userDayMeals.date,
               mealTime: mealTimeMap[mealTime],
               menu: userDayMeals[mealTime].menu,
@@ -442,13 +443,14 @@ module.exports = function(app) {
 
       sheet.columns = [
         { header: 'Empleado', width: 30 },
-        { header: 'Centro de costo', width: 20 },
+        { header: 'Cod. Centro Costo', width: 18 },
+        { header: 'Centro Costo', width: 20 },
         { header: 'Fecha', width: 15 },
         { header: 'Tiempo', width: 15 },
         { header: 'Menu', width: 20 },
         { header: 'Estado', width: 15 },
         { header: 'Asistencia', width: 12 },
-        { header: 'Fecha asistencia', width: 20 },
+        { header: 'Fecha Asistencia', width: 20 },
         { header: 'Valor', width: 15 },
       ];
 
@@ -467,6 +469,9 @@ module.exports = function(app) {
 
         cell = row.getCell(col++);
         cell.value = userMenuData.username;
+
+        cell = row.getCell(col++);
+        cell.value = userMenuData.costCenterCode;
 
         cell = row.getCell(col++);
         cell.value = userMenuData.costCenter;
