@@ -86,7 +86,7 @@ module.exports = function(app) {
             ));
 
             const attendanceAt = (menuOrder && menuOrder.attendanceAt)
-              ? moment(menuOrder.attendanceAt).format('DD/MM/YYYY HH:mm')
+              ? moment(menuOrder.attendanceAt).utcOffset(-6).format('DD/MM/YYYY HH:mm')
               : null;
 
             parsedData[userMenu.userId].meals[dateKey][mealTime] = {
