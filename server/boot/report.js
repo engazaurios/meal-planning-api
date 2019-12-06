@@ -86,7 +86,7 @@ module.exports = function(app) {
             ));
 
             const attendanceAt = (menuOrder && menuOrder.attendanceAt)
-              ? moment(menuOrder.attendanceAt).format('YYYY-MM-DD HH:mm')
+              ? moment(menuOrder.attendanceAt).format('DD/MM/YYYY HH:mm')
               : null;
 
             parsedData[userMenu.userId].meals[dateKey][mealTime] = {
@@ -447,7 +447,8 @@ module.exports = function(app) {
         { header: 'Tiempo', width: 15 },
         { header: 'Menu', width: 20 },
         { header: 'Estado', width: 15 },
-        { header: 'Asistencia', width: 20 },
+        { header: 'Asistencia', width: 12 },
+        { header: 'Fecha asistencia', width: 20 },
         { header: 'Valor', width: 15 },
       ];
 
@@ -481,6 +482,9 @@ module.exports = function(app) {
 
         cell = row.getCell(col++);
         cell.value = userMenuData.status;
+
+        cell = row.getCell(col++);
+        cell.value = userMenuData.attendanceAt ? 'Si' : 'No';
 
         cell = row.getCell(col++);
         cell.value = userMenuData.attendanceAt;
