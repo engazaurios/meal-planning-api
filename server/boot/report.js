@@ -76,10 +76,6 @@ module.exports = function(app) {
 
         userMenu.menus().forEach(function(menu) {
           if (['breakfast', 'lunch', 'dinner'].includes(menu.meal().code)) {
-            const mealTime = menu.meal().code;
-            const mealPercentCost = (1 - (discountPercent / 100));
-            const mealCost = constants.MEALS_DEFAULT_PRICES[mealTime] * mealPercentCost;
-
             const menuOrder = orders.find((order) => (
               (order.menuId.toString() === menu.id.toString()) &&
               (order.userMenuId.toString() === userMenu.id.toString())
@@ -88,6 +84,11 @@ module.exports = function(app) {
             const attendanceAt = (menuOrder && menuOrder.attendanceAt)
               ? moment(menuOrder.attendanceAt).utcOffset(-6).format('DD/MM/YYYY HH:mm')
               : null;
+
+            const mealTime = menu.meal().code;
+            const mealBasePrice = constants.MEALS_DEFAULT_PRICES[mealTime];
+            const mealPercentCost = (1 - (discountPercent / 100));
+            const mealCost = attendanceAt ? (mealBasePrice * mealPercentCost) : mealBasePrice;
 
             parsedData[userMenu.userId].meals[dateKey][mealTime] = {
               menu: menu.title,
